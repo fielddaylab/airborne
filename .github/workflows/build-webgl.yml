@@ -1,0 +1,83 @@
+name: Airborne Build
+
+# One Unity build, deployed independently to:
+#   - the Vault staging CDN: https://cdn.vaultlearninggames-staging.org/fielddaylab/airborne/<branch>/
+#   - the DoIT server (legacy; delete the `doit` job when DoIT is retired)
+# The two deploys don't depend on each other. Deleting a branch removes its CDN preview.
+on:
+   push:
+   delete:
+   workflow_dispatch:
+
+concurrency:
+    # Branch-delete runs get their own group so they never cancel a build of the default branch.
+    group: ${{ github.workflow }}-${{ github.event_name == 'delete' && github.run_id || github.ref }}
+    cancel-in-progress: true
+
+jobs:
+  build:
+    if: github.event_name != 'delete'
+    uses: VaultLearningGames/vault-publisher/.github/workflows/unity-build.yml@v1
+    # Passed explicitly: `secrets: inherit` doesn't cross GitHub orgs.
+    with:
+      build-method: FieldDay.Editor.BuildActions.AutomatedBuild
+    secrets:
+      UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+      UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+
+  preview:
+    needs: build
+    permissions:
+      contents: read
+      id-token: write
+    uses: VaultLearningGames/vault-publisher/.github/workflows/publish-preview.yml@v1
+    with:
+      game: airborne
+      artifact: ${{ needs.build.outputs.artifact }}
+
+  remove-preview:
+    if: github.event_name == 'delete'
+    permissions:
+      contents: read
+      id-token: write
+    uses: VaultLearningGames/vault-publisher/.github/workflows/publish-preview.yml@v1
+    with:
+      game: airborne
+
+  # Legacy DoIT deploy: https://fielddaylab.wisc.edu/play/airborne/ci/<branch>/
+  doit:
+    needs: build
+    runs-on: ubuntu-latest
+    concurrency:
+      group: doit-${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+    - name: Download build
+      uses: actions/download-artifact@v8
+      with:
+        name: ${{ needs.build.outputs.artifact }}
+        path: build
+
+    - name: Install OpenConnect
+      run: sudo NEEDRESTART_MODE=a apt-get -q update && sudo NEEDRESTART_MODE=a apt-get -q install -y openconnect
+
+    - name: Connect to VPN
+      run: |
+        echo "${{ secrets.FIELDDAY_VPN_PASSWORD }}" | sudo openconnect --protocol=gp -u "${{ secrets.FIELDDAY_VPN_USERNAME }}" --passwd-on-stdin --background soe.vpn.wisc.edu
+        # Wait for the tunnel before uploading.
+        for _ in $(seq 1 30); do ip link show tun0 > /dev/null 2>&1 && exit 0; sleep 2; done
+        echo "::error::VPN tunnel did not come up"; exit 1
+
+    - name: Branch folder name
+      run: echo "BRANCH=$(echo "${GITHUB_REF#refs/heads/}" | sed 's/\//_/g')" >> "$GITHUB_ENV"
+
+    - name: Upload to web server via rsync
+      uses: burnett01/rsync-deployments@5.2
+      with:
+        switches: -avzr --delete --rsync-path="mkdir -p ${{ secrets.DEPLOY_DIR }}/${{ env.BRANCH }} && rsync"
+        path: build/*
+        remote_path: ${{ secrets.DEPLOY_DIR }}/${{ env.BRANCH }}
+        remote_host: ${{ secrets.FIELDDAY_WISC_EDU_DEPLOY_HOST }}
+        remote_user: ${{ secrets.FIELDDAY_WISC_EDU_DEPLOY_USER }}
+        remote_key: ${{ secrets.FIELDDAY_WISC_EDU_DEPLOY_KEY }}
