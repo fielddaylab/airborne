@@ -421,6 +421,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: DebugConsole
       objectReference: {fileID: 0}
+    - target: {fileID: 2854406757600522226, guid: ee79e0433ea70eb4993de53367303bc1, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3167945189547186381, guid: ee79e0433ea70eb4993de53367303bc1, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -451,7 +455,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3462019693457050598, guid: ee79e0433ea70eb4993de53367303bc1, type: 3}
       propertyPath: m_Enabled
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3748917624059108877, guid: ee79e0433ea70eb4993de53367303bc1, type: 3}
       propertyPath: m_ActiveFontFeatures.Array.data[0]
