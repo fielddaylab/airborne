@@ -564,7 +564,7 @@ namespace FieldDay.HID {
         #endregion // Debug
     }
 
-    public enum ModifierKeyCode {
+    public enum ModifierKeyCode : ushort {
         None = 0,
 
         LeftControl = KeyCode.LeftControl,
@@ -612,7 +612,7 @@ namespace FieldDay.HID {
         BothShoulderTriggers = L2 | R2,
     }
 
-    public enum MouseButton {
+    public enum MouseButton : byte {
         Left,
         Right,
         Middle

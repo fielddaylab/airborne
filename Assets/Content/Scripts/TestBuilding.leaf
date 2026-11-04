@@ -1,0 +1,7 @@
+#basePath	TestBuilding
+
+:: LampInteract
+@trigger	OnLook
+@who	test:lamp
+@once
+{@Player}	

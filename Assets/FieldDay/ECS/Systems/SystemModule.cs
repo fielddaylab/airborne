@@ -19,6 +19,7 @@ namespace FieldDay.Systems {
             GetComponentsInChildren(true, s_Components);
             for (int i = 0; i < s_Components.Count; i++) {
                 s_Components[i].RegisterSystems(ref m_RegisteredModules);
+                DestroyImmediate((UnityEngine.Object) s_Components[i]);
             }
             s_Components.Clear();
         }
