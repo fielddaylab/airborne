@@ -12,4 +12,8 @@ namespace FieldDay.Scripting {
         void StartSkip();
         void CancelSkip();
     }
+
+    public interface IDialoguePrinterFactory {
+        IDialoguePrinter AllocPrinter();
+    }
 }

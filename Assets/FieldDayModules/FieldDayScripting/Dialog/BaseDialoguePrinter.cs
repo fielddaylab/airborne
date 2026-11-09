@@ -1,14 +1,16 @@
+using BeauPools;
 using BeauUtil;
 using BeauUtil.Debugger;
 using BeauUtil.Tags;
 using FieldDay.Components;
 using Leaf.Runtime;
+using System;
 using System.Collections;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace FieldDay.Scripting {
-    public abstract class BaseDialoguePrinter : BatchedComponent, IRegistrationCallbacks, IDialoguePrinter {
+    public abstract class BaseDialoguePrinter : BatchedComponent, IRegistrationCallbacks, IDialoguePrinter, IPoolConstructHandler {
         #region Inspector
 
         [SerializeField] private SerializedHash32 m_Id;
@@ -17,15 +19,20 @@ namespace FieldDay.Scripting {
 
         private ScriptThread m_OwnerThread;
         private TagStringEventHandler m_OverrideHandler;
+        [NonSerialized] private bool m_IsPooled;
 
         #region IRegistrationCallbacks
 
         public virtual void OnRegister() {
-            ScriptUtility.RegisterDialoguePrinter(m_Id, this);
+            if (!m_IsPooled) {
+                ScriptUtility.RegisterDialoguePrinter(m_Id, this);
+            }
         }
         
         public virtual void OnDeregister() {
-            ScriptUtility.DeregisterDialoguePrinter(m_Id, this);
+            if (!m_IsPooled) {
+                ScriptUtility.DeregisterDialoguePrinter(m_Id, this);
+            }
         }
 
         #endregion // IRegistrationCallbacks
@@ -84,5 +91,20 @@ namespace FieldDay.Scripting {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get { return m_OwnerThread; }
         }
+
+        protected void FreeToPool() {
+            Pool.TryFree(this);
+        }
+
+        #region Pool
+
+        void IPoolConstructHandler.OnConstruct() {
+            m_IsPooled = true;
+        }
+
+        void IPoolConstructHandler.OnDestruct() {
+        }
+
+        #endregion // Pool
     }
 }

@@ -11,15 +11,15 @@ TagManager:
   - 
   - Water
   - UI
-  - SolidWall
+  - 
   - RoomBoundaries
-  - Floor
-  - Ceiling
+  - 
+  - 
   - NPC
   - Player
   - Interactable
-  - 
-  - 
+  - InteractionSensor
+  - ScreenInteractable
   - 
   - 
   - 
@@ -38,6 +38,33 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: Background
+    uniqueID: 1480876561
+    locked: 0
+  - name: Shadows
+    uniqueID: 3283135751
+    locked: 0
+  - name: NPC
+    uniqueID: 3502057289
+    locked: 0
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Foreground
+    uniqueID: 3494995595
+    locked: 0
+  - name: WorldUI
+    uniqueID: 29713035
+    locked: 0
+  - name: CanvasUI
+    uniqueID: 3360682737
+    locked: 0
+  - name: PopupUI
+    uniqueID: 2891128233
+    locked: 0
+  - name: SharedUI
+    uniqueID: 4240836335
+    locked: 0
+  - name: System
+    uniqueID: 533871497
     locked: 0

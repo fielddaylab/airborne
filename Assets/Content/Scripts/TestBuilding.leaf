@@ -1,7 +1,6 @@
 #basePath	TestBuilding
 
 :: LampInteract
-@trigger	OnLook
-@who	test:lamp
-@once
-{@Player}	
+@trigger	OnInteract
+@who	Dresser
+{@Player}	Empty...

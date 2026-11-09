@@ -1,6 +1,8 @@
 using BeauUtil;
 using BeauUtil.Debugger;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
@@ -87,6 +89,36 @@ namespace FieldDay.Collections {
             T[] copy = new T[m_Count];
             Array.Copy(m_Array, copy, m_Count);
             return copy;
+        }
+        
+        /// <summary>
+        /// Sorts the contents of the work list with the given comparer.
+        /// </summary>
+        public void Sort(IComparer<T> comparer) {
+            Array.Sort(m_Array, 0, m_Count, comparer);
+        }
+
+        /// <summary>
+        /// Sorts the contents of the work list.
+        /// </summary>
+        public void Sort() {
+            Array.Sort(m_Array, 0, m_Count, CompareUtils.DefaultSort<T>());
+        }
+
+        /// <summary>
+        /// Retrieves the internal array.
+        /// </summary>
+        public T[] InternalArray {
+            get { return m_Array; }
+        }
+
+        /// <summary>
+        /// Updates the count.
+        /// </summary>
+        public void UpdateCount(int count) {
+            Assert.True(count >= 0, "Count must be non-negative");
+            m_Count = count;
+            EnsureCapacity(count);
         }
     }
 }

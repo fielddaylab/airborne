@@ -17,21 +17,11 @@ MonoBehaviour:
     LookupFlags: 58
     LookupInherit: 0
     Assemblies:
-    - AssemblyName: Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-      TypeCount: 2
     - AssemblyName: FieldDay.Vox, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
       TypeCount: 2
     - AssemblyName: FieldDay.Scripting, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
       TypeCount: 1
     Types:
-    - TypeName: SpaceFab.SpacefabGame
-      Self: 0
-      MemberCount: 1
-      OverloadCount: 0
-    - TypeName: SpaceFab.Onboarding.ElementTagLookupUtility
-      Self: 0
-      MemberCount: 1
-      OverloadCount: 0
     - TypeName: FieldDay.Vox.VoxUtility
       Self: 0
       MemberCount: 1
@@ -45,10 +35,6 @@ MonoBehaviour:
       MemberCount: 1
       OverloadCount: 0
     Members:
-    - MemberName: OnPreBoot
-      Type: 8
-    - MemberName: Create
-      Type: 8
     - MemberName: Initialize
       Type: 8
     - MemberName: Initialize
@@ -62,28 +48,14 @@ MonoBehaviour:
     LookupFlags: 58
     LookupInherit: 0
     Assemblies:
-    - AssemblyName: Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-      TypeCount: 2
     - AssemblyName: FieldDay.Scripting, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
       TypeCount: 1
     Types:
-    - TypeName: SpaceFab.SpacefabGame
-      Self: 0
-      MemberCount: 1
-      OverloadCount: 0
-    - TypeName: SpaceFab.Design.DesignTriggers
-      Self: 0
-      MemberCount: 1
-      OverloadCount: 0
     - TypeName: FieldDay.Scripting.ScriptDebugHooks
       Self: 0
       MemberCount: 1
       OverloadCount: 0
     Members:
-    - MemberName: OnBoot
-      Type: 8
-    - MemberName: Init
-      Type: 8
     - MemberName: OnBoot
       Type: 8
     OverloadedMethods: []
@@ -102,45 +74,11 @@ MonoBehaviour:
     LookupFlags: 58
     LookupInherit: 0
     Assemblies:
-    - AssemblyName: Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-      TypeCount: 8
     - AssemblyName: FieldDay.Core, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
       TypeCount: 1
     - AssemblyName: FieldDay.Scripting, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
       TypeCount: 1
     Types:
-    - TypeName: SpaceFab.MaterialKnowledgeDebugMenu
-      Self: 0
-      MemberCount: 1
-      OverloadCount: 0
-    - TypeName: SpaceFab.MinigameDebugMenu
-      Self: 0
-      MemberCount: 1
-      OverloadCount: 0
-    - TypeName: SpaceFab.ChapterDebugMenu
-      Self: 0
-      MemberCount: 1
-      OverloadCount: 0
-    - TypeName: SpaceFab.Save.BookmarkDebugMenu
-      Self: 0
-      MemberCount: 1
-      OverloadCount: 0
-    - TypeName: SpaceFab.Save.SaveUtility
-      Self: 0
-      MemberCount: 1
-      OverloadCount: 0
-    - TypeName: SpaceFab.Comic.ComicDebugMenu
-      Self: 0
-      MemberCount: 1
-      OverloadCount: 0
-    - TypeName: SpaceFab.Overarching.OverarchingDebugMenu
-      Self: 0
-      MemberCount: 2
-      OverloadCount: 0
-    - TypeName: SpaceFab.Design.DesignDebugMenu
-      Self: 0
-      MemberCount: 1
-      OverloadCount: 0
     - TypeName: FieldDay.Data.ConfigVar
       Self: 0
       MemberCount: 1
@@ -150,24 +88,6 @@ MonoBehaviour:
       MemberCount: 1
       OverloadCount: 0
     Members:
-    - MemberName: CreateMaterialKnowledgeDebugMenu
-      Type: 8
-    - MemberName: CreateMinigameDebugMenu
-      Type: 8
-    - MemberName: CreateChapterDebugMenu
-      Type: 8
-    - MemberName: CreateBookmarkDebugMenu
-      Type: 8
-    - MemberName: SaveDebugMenu
-      Type: 8
-    - MemberName: CreateComicDebugMenu
-      Type: 8
-    - MemberName: CreateContractsDebugMenu
-      Type: 8
-    - MemberName: CreateMinigamesJumpDebugMenu
-      Type: 8
-    - MemberName: CreateDesignDebugMenu
-      Type: 8
     - MemberName: DebugMenuFactory
       Type: 8
     - MemberName: CreateDebugMenu

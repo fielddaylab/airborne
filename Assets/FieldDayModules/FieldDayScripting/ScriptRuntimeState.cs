@@ -51,6 +51,7 @@ namespace FieldDay.Scripting {
         internal TagStringParser TagParser;
 
         // Printers
+        internal readonly Dictionary<StringHash32, IDialoguePrinterFactory> PrinterFactoryMap = MapUtils.Create<StringHash32, IDialoguePrinterFactory>(2);
         internal readonly Dictionary<StringHash32, IDialoguePrinter> PrinterMap = MapUtils.Create<StringHash32, IDialoguePrinter>(4);
         internal readonly Dictionary<StringHash32, IDialogueChoicePresenter> ChoicePresenterMap = MapUtils.Create<StringHash32, IDialogueChoicePresenter>(4);
         internal StringHash32 DefaultPrinterId;
@@ -565,6 +566,25 @@ namespace FieldDay.Scripting {
         }
 
         /// <summary>
+        /// Registers a printer factory.
+        /// </summary>
+        static public void RegisterDialoguePrinterFactory(StringHash32 id, IDialoguePrinterFactory factory) {
+            Assert.NotNull(factory);
+            Assert.False(Runtime.PrinterFactoryMap.ContainsKey(id), "DialoguePrinterFactory with id '{0}' already registered", id.ToDebugString());
+            Runtime.PrinterFactoryMap.Add(id, factory);
+        }
+
+        /// <summary>
+        /// Deregisters a printer factory.
+        /// </summary>
+        static public void DeregisterDialoguePrinterFactory(StringHash32 id, IDialoguePrinterFactory factory) {
+            Assert.NotNull(factory);
+            Assert.True(Runtime.PrinterFactoryMap.ContainsKey(id), "DialoguePrinterFactory with id '{0}' not registered", id.ToDebugString());
+            Assert.True(Runtime.PrinterFactoryMap[id] == factory, "DialoguePrinterFactory with id '{0}' is not registered to the given factory", id.ToDebugString());
+            Runtime.PrinterMap.Remove(id);
+        }
+
+        /// <summary>
         /// Registers a dialog interface.
         /// </summary>
         static public void RegisterDialogueInterface<TInterface>(StringHash32 id, TInterface printerAndChoice)
@@ -594,7 +614,7 @@ namespace FieldDay.Scripting {
         }
 
         /// <summary>
-        /// Deregisteres a dialogue printer interface.
+        /// Deregisters a dialogue printer interface.
         /// </summary>
         static public void DeregisterDialoguePrinter(StringHash32 id, IDialoguePrinter printer) {
             Assert.NotNull(printer);
@@ -626,9 +646,13 @@ namespace FieldDay.Scripting {
         /// Returns the dialogue printer with the given id.
         /// </summary>
         static public IDialoguePrinter GetDialoguePrinter(StringHash32 id) {
-            // TODO: Handle pooled printers?
             id = StringHash32.First(id, Runtime.DefaultPrinterId);
-            Runtime.PrinterMap.TryGetValue(id, out var printer);
+            IDialoguePrinter printer;
+            if (Runtime.PrinterFactoryMap.TryGetValue(id, out var factory)) {
+                printer = factory.AllocPrinter();
+            } else {
+                Runtime.PrinterMap.TryGetValue(id, out printer);
+            }
             Assert.NotNull(printer, "DialoguePrinter with id '{0}' not registered!", id.ToDebugString());
             return printer;
         }

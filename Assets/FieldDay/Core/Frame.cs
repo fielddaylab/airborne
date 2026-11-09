@@ -303,11 +303,33 @@ namespace FieldDay {
             return loadingState == SceneHelper.LoadingState.Loading || loadingState == SceneHelper.LoadingState.Loaded;
         }
 
+        /// <summary>
+        /// Is the given GameObject an edit mode instance.
+        /// </summary>
+        static public bool IsEditModeInstance(Component component) {
+#if UNITY_EDITOR
+            return Application.IsPlaying(component) && (!Application.isPlaying || EditorApplication.isPlayingOrWillChangePlaymode);
+#else
+            return false;
+#endif // UNITY_EDITOR
+        }
+
+        /// <summary>
+        /// Is the given GameObject an edit mode instance.
+        /// </summary>
+        static public bool IsEditModeInstance(GameObject gameObject) {
+#if UNITY_EDITOR
+            return Application.IsPlaying(gameObject) && (!Application.isPlaying || EditorApplication.isPlayingOrWillChangePlaymode);
+#else
+            return false;
+#endif // UNITY_EDITOR
+        }
+
         #endregion // Active Checks
-    
+
         #region Editor
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
 
         [EditorStaticResource]
         static private void EditorInitialize() {

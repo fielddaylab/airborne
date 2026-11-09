@@ -11,6 +11,9 @@ GameObject:
   - component: {fileID: 6702747279871017106}
   - component: {fileID: 1569250255994997933}
   - component: {fileID: 5959015950649679547}
+  - component: {fileID: 1154003839723670755}
+  - component: {fileID: 3985381455197707102}
+  - component: {fileID: 6818222122455440584}
   m_Layer: 0
   m_Name: EventSystem
   m_TagString: Untagged
@@ -68,6 +71,42 @@ MonoBehaviour:
   m_InputActionsPerSecond: 10
   m_RepeatDelay: 0.5
   m_ForceModuleActive: 0
+--- !u!114 &1154003839723670755
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 405158374187385127}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b1e3e7fe7e8c514d90366ab93a1f31c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &3985381455197707102
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 405158374187385127}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9d2fe0898961774595c14f546a65658, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &6818222122455440584
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 405158374187385127}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9098ee15a6ef84049a3b9a625ac99479, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &3054894514152146123
 GameObject:
   m_ObjectHideFlags: 0
@@ -315,9 +354,11 @@ MonoBehaviour:
   m_DefaultPixelSprite: {fileID: 21300000, guid: c69c27d6e4e6e734989970a48dd04e44, type: 3}
   m_AllowMultiTouchInput: 0
   m_ReflectionData: {fileID: 11400000, guid: 8ba8df1aface7ec459a93e8b4abf6d1c, type: 2}
-  m_ConfigHints: []
+  m_ConfigHints:
+  - Name: VOX_ENABLED
+    Value: 0
   m_AudioConfig:
-    Is3D: 1
+    Is3D: 0
     DefaultEmitterProfile: {fileID: 0}
     PreloadWorkerTimeSlice: 0
   m_MemoryConfig:
@@ -338,7 +379,8 @@ MonoBehaviour:
     DisplayConfig: {fileID: 11400000, guid: 9cd30efe7c4b4c14ca24640095b47a4e, type: 2}
   m_ShadingConfig:
     DefaultGraphicMaterial: {fileID: 2100000, guid: f7122e1f658491340a2fb026127f9f84, type: 2}
-  m_GlobalAssetPacks: []
+  m_GlobalAssetPacks:
+  - {fileID: 11400000, guid: 158bb712901e2fe47a9ca497c7c46327, type: 2}
 --- !u!114 &1178917486542185276
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -353,8 +395,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Capacity: 32
   m_TweenPool: 32
-  m_DebugMode: 1
-  m_Profiling: 1
+  m_DebugMode: 0
+  m_Profiling: 0
   m_Snapshots: 0
   m_HandleExceptions: 1
   m_DefaultPhase: 0

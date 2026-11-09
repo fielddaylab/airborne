@@ -88,6 +88,20 @@ namespace FieldDay.Collections {
             return values;
         }
 
+        public T[] InternalArray {
+            get {
+                if (m_PooledList == null) {
+                    return Array.Empty<T>();
+                }
+
+                return Unsafe.FastCast<T[]>(m_PooledList.InternalArray);
+            }
+        }
+
+        public void UpdateCount(int count) {
+            m_PooledList?.UpdateCount(count);
+        }
+
         static public TempReferenceBuffer<T> Create() {
             return new TempReferenceBuffer<T>(PooledObjectWorkList.GetPoolForCapacity(0));
         }

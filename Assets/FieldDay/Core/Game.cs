@@ -50,6 +50,17 @@ namespace FieldDay {
 #endif // UNITY_EDITOR
 
         /// <summary>
+        /// Is this currently in Unity's edit mode.
+        /// </summary>
+#if UNITY_EDITOR
+        static public bool IsEditMode {
+            get { return !UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode; }
+        }
+#else
+        public const bool IsEditMode = false;
+#endif // UNITY_EDITOR
+
+        /// <summary>
         /// Audio manager. Maintains audio playback.
         /// </summary>
         static public AudioMgr Audio { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; internal set; }
