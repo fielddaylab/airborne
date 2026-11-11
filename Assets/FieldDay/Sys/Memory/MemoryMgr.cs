@@ -43,14 +43,7 @@ namespace FieldDay.Memory {
         private DoubleBuffered<StringArena> m_StringSliceFrameAllocator;
 
         private Transform m_PersistentPoolRoot;
-
-        private Unsafe.ArenaHandle m_BudgetCategoryAllocator;
-
         private PerformanceBudget m_PerformanceBudget;
-
-#if MEMORY_LEAK_DETECTION
-        private RingBuffer<Unsafe.ArenaHandle> m_ArenaTracker;
-#endif // MEMORY_LEAK_DETECTION
 
         /// <summary>
         /// Pool root that lives in the DontDestroyOnLoad scene.
@@ -170,61 +163,7 @@ namespace FieldDay.Memory {
 
         #region Arenas
 
-        /// <summary>
-        /// Creates a new memory arena.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Unsafe.ArenaHandle CreateArena(int length, StringHash32 name, Unsafe.AllocatorFlags flags) {
-            Unsafe.ArenaHandle handle = Unsafe.CreateArena(length, name, flags);
-#if MEMORY_LEAK_DETECTION
-            m_ArenaTracker.PushBack(handle);
-#endif // MEMORY_LEAK_DETECTION
-            return handle;
-        }
-
-        /// <summary>
-        /// Creates a new memory debugging arena.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Unsafe.ArenaHandle CreateDebugArena(int length, StringHash32 name, Unsafe.AllocatorFlags flags) {
-#if DEVELOPMENT
-            Unsafe.ArenaHandle handle = Unsafe.CreateArena(length, name, flags);
-#if MEMORY_LEAK_DETECTION
-            m_ArenaTracker.PushBack(handle);
-#endif // MEMORY_LEAK_DETECTION
-            return handle;
-#else
-            return default;
-#endif // DEVELOPMENT
-        }
-
-        /// <summary>
-        /// Destroys a memory arena.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void DestroyArena(Unsafe.ArenaHandle arena) {
-#if MEMORY_LEAK_DETECTION
-            if (!m_ArenaTracker.FastRemove(arena)) {
-                Assert.Fail("Arena was not created from MemoryMgr");
-            }
-#endif // MEMORY_LEAK_DETECTION
-            Unsafe.DestroyArena(arena);
-        }
-
-        /// <summary>
-        /// Destroys a memory arena.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void DestroyArena(ref Unsafe.ArenaHandle arena) {
-#if MEMORY_LEAK_DETECTION
-            if (!m_ArenaTracker.FastRemove(arena)) {
-                Assert.Fail("Arena was not created from MemoryMgr");
-            }
-#endif // MEMORY_LEAK_DETECTION
-            Unsafe.TryDestroyArena(ref arena);
-        }
-
-#endregion // Arenas
+        #endregion // Arenas
 
         #region Budget
 
@@ -256,10 +195,6 @@ namespace FieldDay.Memory {
             //GCSettings.LatencyMode = GCLatencyMode.LowLatency;
 
             m_DefaultShader = Shader.Find("Hidden/InternalColored");
-
-#if MEMORY_LEAK_DETECTION
-            m_ArenaTracker = new RingBuffer<Unsafe.ArenaHandle>(64, RingBufferMode.Expand);
-#endif // MEMORY_LEAK_DETECTION
 
             PooledObjectWorkList.Initialize();
 
@@ -312,16 +247,6 @@ namespace FieldDay.Memory {
             m_MeshPool.Dispose();
             m_MaterialPool.Dispose();
             m_DefaultShader = null;
-
-#if MEMORY_LEAK_DETECTION
-            if (m_ArenaTracker.Count > 0) {
-                Log.Error("[MemoryMgr] MEMORY LEAK - {0} arenas", m_ArenaTracker);
-                while (m_ArenaTracker.TryPopBack(out var arena)) {
-                    Log.Error("LEAKED {0}", arena.ToDebugString());
-                    Unsafe.DestroyArena(arena);
-                }
-            }
-#endif // MEMORY_LEAK_DETECTION
 
             PooledObjectWorkList.Shutdown();
             Mem.Mgr = null;

@@ -7,9 +7,9 @@ using Leaf.Runtime;
 
 namespace Airborne.Building {
     /// <summary>
-    /// Requested interaction.
+    /// Maintains a queue of interaction requests.
     /// </summary>
     public sealed class InteractionArbiter : SharedStateComponent {
-        public Pipe<InteractRequest> Requests = new Pipe<InteractRequest>(8, false);
+        public Pipe<InteractRequest> Requests = new Pipe<InteractRequest>(4, false);
     }
 }

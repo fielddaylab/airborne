@@ -10,9 +10,20 @@ namespace Airborne.Building {
     /// Verb, involved actors, and context.
     /// </summary>
     public struct InteractRequest {
+        public InteractVerb Verb;
         public StringHash32 SourceId;
         public StringHash32 TargetId;
         public StringHash32 ContextId;
+    }
+
+    public enum InteractVerb {
+        None,
+        
+        Use,
+        Inspect,
+        Give,
+        Open,
+        Close
     }
 
     static public partial class InteractionUtility {
@@ -23,16 +34,18 @@ namespace Airborne.Building {
             arbiter.Requests.Write(request);
         }
 
-        static public void RequestInteractionByActor(ScriptActor source, ScriptActor target, StringHash32 contextId) {
+        static public void RequestInteractionByActor(ScriptActor source, InteractVerb verb, ScriptActor target, StringHash32 contextId) {
             InteractRequest request;
+            request.Verb = verb;
             request.SourceId = source?.Id ?? default;
             request.TargetId = target?.Id ?? default;
             request.ContextId = contextId;
             RequestInteraction(request);
         }
 
-        static public void RequestInteractionById(StringHash32 sourceId, StringHash32 targetId, StringHash32 contextId) {
+        static public void RequestInteractionById(StringHash32 sourceId, InteractVerb verb, StringHash32 targetId, StringHash32 contextId) {
             InteractRequest request;
+            request.Verb = verb;
             request.SourceId = sourceId;
             request.TargetId = targetId;
             request.ContextId = contextId;

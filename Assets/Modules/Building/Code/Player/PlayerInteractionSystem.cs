@@ -87,7 +87,7 @@ namespace Airborne.Building {
             if (player.Input.IsInputEnabled()) {
                 if (player.ClosestInteractable != null) {
                     if (input.ActionKeys.ConsumePress(ActionKeys.Interact)) {
-                        InteractionUtility.RequestInteractionByActor(player.Actor, player.ClosestInteractable.Actor, null);
+                        InteractionUtility.RequestInteractionByActor(player.Actor, InteractVerb.Inspect, player.ClosestInteractable.Actor, null);
                     }
                 }
             }
