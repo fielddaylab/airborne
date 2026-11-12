@@ -17,7 +17,7 @@ This node can be referenced by name from other `.leaf` files.
 Visiting this node will be tracked by scripting persistence.
 
 `[Scope]` (scope, optional): Specifies the scope of this tracking.
-* Supported values: `session`, `chapter`, `save`
+* Supported values: `session`, `chapter`, `save`, `cycle`/`level`
 * Default value: `save`
 
 **NOTE:** This is incompatible with the `@once` tag.
@@ -48,7 +48,7 @@ This node will only be allowed to execute if all the specified conditions are me
 This node will only allowed to execute once, within a specific history scope. Additionally, visiting this node will be tracked by scripting persistence.
 
 `[Scope]` (scope, optional): Specifies the scope of tracking.
-* Supported values: `session`, `chapter`, `save`
+* Supported values: `session`, `chapter`, `save`, `cycle`/`level`
 * Default value: `save`
 
 **NOTE:** This is incompatible with the `@tracked` tag.

@@ -306,6 +306,37 @@ namespace FieldDay.Scripting {
 
         #endregion // Variables
 
+        #region History
+
+        /// <summary>
+        /// The current script history buffer.
+        /// </summary>
+        static public ScriptHistoryData History {
+            get { return Runtime.CurrentHistoryBuffer; }
+        }
+
+        /// <summary>
+        /// Clears history at the given scope from the current script history.
+        /// </summary>
+        static public void ClearHistory(ScriptNodeMemoryScope scope) {
+            ScriptHistoryData buffer = History;
+            if (buffer != null) {
+                buffer.ClearScope(scope);
+            }
+        }
+
+        /// <summary>
+        /// Clears recent history from the current script history.
+        /// </summary>
+        static public void ClearRecentHistory() {
+            ScriptHistoryData buffer = History;
+            if (buffer != null) {
+                buffer.ClearRecentHistory();
+            }
+        }
+
+        #endregion // History
+
         #region Tag Parsing
 
         /// <summary>

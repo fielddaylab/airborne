@@ -154,6 +154,8 @@ namespace FieldDay.Scripting {
                     PersistenceScope = ScriptNodeMemoryScope.Session;
                 } else if (type.Equals("chapter", true)) {
                     PersistenceScope = ScriptNodeMemoryScope.Chapter;
+                } else if (type.Equals("level", true) || type.Equals("cycle", true)) {
+                    PersistenceScope = ScriptNodeMemoryScope.Level;
                 } else if (type.IsEmpty || type.Equals("save", true)) {
                     PersistenceScope = ScriptNodeMemoryScope.Persistent;
                 } else {
@@ -172,6 +174,8 @@ namespace FieldDay.Scripting {
                     PersistenceScope = ScriptNodeMemoryScope.Session;
                 } else if (type.Equals("chapter", true)) {
                     PersistenceScope = ScriptNodeMemoryScope.Chapter;
+                } else if (type.Equals("level", true) || type.Equals("cycle", true)) {
+                    PersistenceScope = ScriptNodeMemoryScope.Level;
                 } else if (type.IsEmpty || type.Equals("save", true)) {
                     PersistenceScope = ScriptNodeMemoryScope.Persistent;
                 } else {
@@ -307,6 +311,7 @@ namespace FieldDay.Scripting {
     /// </summary>
     public enum ScriptNodeMemoryScope : byte {
         Untracked,
+        Level,
         Session,
         Chapter,
         Persistent,

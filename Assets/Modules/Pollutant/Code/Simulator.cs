@@ -7,7 +7,9 @@ using FieldDay.SharedState;
 
 namespace Airborne.Pollutants {
     public sealed class Simulator : SharedStateComponent {
+        // max number of connections (max passages * 2) must fit into 128 bits
         private const byte StaticAssert_ConnectionsIs64 = (BuildingConsts.MaxPassages * 2 <= 128 ? 0 : -1);
+        // max number of features must fit into 64 bits
         private const byte StaticAssert_FeaturesIs64 = (BuildingConsts.MaxFeatures <= 64 ? 0 : -1);
 
         public const byte NullIndex = 0xFF;

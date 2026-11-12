@@ -59,95 +59,115 @@ namespace Airborne.Building {
 #endif // UNITY_EDITOR
     }
 
+    public struct BuildingManifestCounts {
+        public int RoomCount;
+        public int ResidentCount;
+        public int FeatureCount;
+        public int PassageCount;
+    }
+
     static public partial class BuildingLookup {
+        #region Counts
+
+        static public BuildingManifestCounts CountObjects(BuildingManifest manifest) {
+            BuildingManifestCounts counts;
+            counts.RoomCount = manifest.Rooms.Length;
+            counts.ResidentCount = manifest.Residents.Length;
+            counts.FeatureCount = manifest.Features.Length;
+            counts.PassageCount = manifest.Passages.Length;
+            return counts;
+        }
+
+        #endregion // Counts
+
         #region Room Name Resolution
 
-        static public int GetRoomIndex(BuildingManifest map, StringHash32 roomName) {
-            Assert.NotNullOrDestroyed(map);
-            int index = ArrayUtils.IndexOf(map.RoomNames, roomName);
+        static public int GetRoomIndex(BuildingManifest manifest, StringHash32 roomName) {
+            Assert.NotNullOrDestroyed(manifest);
+            int index = ArrayUtils.IndexOf(manifest.RoomNames, roomName);
             Assert.True(index >= 0, "Room '{0}' not present", roomName);
             return index;
         }
 
-        static public StringHash32 GetRoomId(BuildingManifest map, int roomIndex) {
-            Assert.NotNullOrDestroyed(map);
-            Assert.True(roomIndex >= 0 && roomIndex < map.RoomNames.Length, "Room index {0} is out of range");
-            return map.RoomNames[roomIndex];
+        static public StringHash32 GetRoomId(BuildingManifest manifest, int roomIndex) {
+            Assert.NotNullOrDestroyed(manifest);
+            Assert.True(roomIndex >= 0 && roomIndex < manifest.RoomNames.Length, "Room index {0} is out of range");
+            return manifest.RoomNames[roomIndex];
         }
 
-        static public RoomInstance GetRoomInstance(BuildingManifest map, int roomIndex) {
-            Assert.NotNullOrDestroyed(map);
-            Assert.True(roomIndex >= 0 && roomIndex < map.RoomNames.Length, "Room index {0} is out of range");
-            return map.Rooms[roomIndex];
+        static public RoomInstance GetRoomInstance(BuildingManifest manifest, int roomIndex) {
+            Assert.NotNullOrDestroyed(manifest);
+            Assert.True(roomIndex >= 0 && roomIndex < manifest.RoomNames.Length, "Room index {0} is out of range");
+            return manifest.Rooms[roomIndex];
         }
 
         #endregion // Room Name Resolution
 
         #region Resident Name Resolution
 
-        static public int GetResidentIndex(BuildingManifest map, StringHash32 roomName) {
-            Assert.NotNullOrDestroyed(map);
-            int index = ArrayUtils.IndexOf(map.ResidentNames, roomName);
+        static public int GetResidentIndex(BuildingManifest manifest, StringHash32 roomName) {
+            Assert.NotNullOrDestroyed(manifest);
+            int index = ArrayUtils.IndexOf(manifest.ResidentNames, roomName);
             Assert.True(index >= 0, "Resident '{0}' not present", roomName);
             return index;
         }
 
-        static public StringHash32 GetResidentId(BuildingManifest map, int roomIndex) {
-            Assert.NotNullOrDestroyed(map);
-            Assert.True(roomIndex >= 0 && roomIndex < map.ResidentNames.Length, "Resident index {0} is out of range");
-            return map.ResidentNames[roomIndex];
+        static public StringHash32 GetResidentId(BuildingManifest manifest, int roomIndex) {
+            Assert.NotNullOrDestroyed(manifest);
+            Assert.True(roomIndex >= 0 && roomIndex < manifest.ResidentNames.Length, "Resident index {0} is out of range");
+            return manifest.ResidentNames[roomIndex];
         }
 
-        static public Resident GetResidentInstance(BuildingManifest map, int roomIndex) {
-            Assert.NotNullOrDestroyed(map);
-            Assert.True(roomIndex >= 0 && roomIndex < map.ResidentNames.Length, "Resident index {0} is out of range");
-            return map.Residents[roomIndex];
+        static public Resident GetResidentInstance(BuildingManifest manifest, int roomIndex) {
+            Assert.NotNullOrDestroyed(manifest);
+            Assert.True(roomIndex >= 0 && roomIndex < manifest.ResidentNames.Length, "Resident index {0} is out of range");
+            return manifest.Residents[roomIndex];
         }
 
         #endregion // Resident Name Resolution
 
         #region Feature Name Resolution
 
-        static public int GetFeatureIndex(BuildingManifest map, StringHash32 roomName) {
-            Assert.NotNullOrDestroyed(map);
-            int index = ArrayUtils.IndexOf(map.FeatureNames, roomName);
+        static public int GetFeatureIndex(BuildingManifest manifest, StringHash32 roomName) {
+            Assert.NotNullOrDestroyed(manifest);
+            int index = ArrayUtils.IndexOf(manifest.FeatureNames, roomName);
             Assert.True(index >= 0, "Feature '{0}' not present", roomName);
             return index;
         }
 
-        static public StringHash32 GetFeatureId(BuildingManifest map, int roomIndex) {
-            Assert.NotNullOrDestroyed(map);
-            Assert.True(roomIndex >= 0 && roomIndex < map.FeatureNames.Length, "Feature index {0} is out of range");
-            return map.FeatureNames[roomIndex];
+        static public StringHash32 GetFeatureId(BuildingManifest manifest, int roomIndex) {
+            Assert.NotNullOrDestroyed(manifest);
+            Assert.True(roomIndex >= 0 && roomIndex < manifest.FeatureNames.Length, "Feature index {0} is out of range");
+            return manifest.FeatureNames[roomIndex];
         }
 
-        static public FeatureInstance GetFeatureInstance(BuildingManifest map, int roomIndex) {
-            Assert.NotNullOrDestroyed(map);
-            Assert.True(roomIndex >= 0 && roomIndex < map.FeatureNames.Length, "Feature index {0} is out of range");
-            return map.Features[roomIndex];
+        static public FeatureInstance GetFeatureInstance(BuildingManifest manifest, int roomIndex) {
+            Assert.NotNullOrDestroyed(manifest);
+            Assert.True(roomIndex >= 0 && roomIndex < manifest.FeatureNames.Length, "Feature index {0} is out of range");
+            return manifest.Features[roomIndex];
         }
 
         #endregion // Feature Name Resolution
 
         #region Passage Name Resolution
 
-        static public int GetPassageIndex(BuildingManifest map, StringHash32 roomName) {
-            Assert.NotNullOrDestroyed(map);
-            int index = ArrayUtils.IndexOf(map.PassageNames, roomName);
+        static public int GetPassageIndex(BuildingManifest manifest, StringHash32 roomName) {
+            Assert.NotNullOrDestroyed(manifest);
+            int index = ArrayUtils.IndexOf(manifest.PassageNames, roomName);
             Assert.True(index >= 0, "Passage '{0}' not present", roomName);
             return index;
         }
 
-        static public StringHash32 GetPassageId(BuildingManifest map, int roomIndex) {
-            Assert.NotNullOrDestroyed(map);
-            Assert.True(roomIndex >= 0 && roomIndex < map.PassageNames.Length, "Passage index {0} is out of range");
-            return map.PassageNames[roomIndex];
+        static public StringHash32 GetPassageId(BuildingManifest manifest, int roomIndex) {
+            Assert.NotNullOrDestroyed(manifest);
+            Assert.True(roomIndex >= 0 && roomIndex < manifest.PassageNames.Length, "Passage index {0} is out of range");
+            return manifest.PassageNames[roomIndex];
         }
 
-        static public PassageInstance GetPassageInstance(BuildingManifest map, int roomIndex) {
-            Assert.NotNullOrDestroyed(map);
-            Assert.True(roomIndex >= 0 && roomIndex < map.PassageNames.Length, "Passage index {0} is out of range");
-            return map.Passages[roomIndex];
+        static public PassageInstance GetPassageInstance(BuildingManifest manifest, int roomIndex) {
+            Assert.NotNullOrDestroyed(manifest);
+            Assert.True(roomIndex >= 0 && roomIndex < manifest.PassageNames.Length, "Passage index {0} is out of range");
+            return manifest.Passages[roomIndex];
         }
 
         #endregion // Passage Name Resolution

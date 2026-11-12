@@ -8,7 +8,7 @@ namespace FieldDay.Scripting {
     /// Scripting history data.
     /// </summary>
     public sealed class ScriptHistoryData {
-        public const int ScopeCount = 3;
+        public const int ScopeCount = 4;
         public const int HistorySize = 64;
 
         /// <summary>

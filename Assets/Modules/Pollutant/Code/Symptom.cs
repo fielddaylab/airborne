@@ -1,5 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
+using BeauUtil;
+using BeauUtil.Debugger;
 
 namespace Airborne.Pollutants {
     /// <summary>
@@ -26,6 +28,70 @@ namespace Airborne.Pollutants {
         public SymptomSeverity Severity {
             get { return (SymptomSeverity) ((m_PackedValue >> SeverityShift) & SeverityMask); }
         }
+
+        #region Utilities
+
+        /// <summary>
+        /// Parses a symptom from the given slice.
+        /// Major symptoms should append "-major" to the end.
+        /// </summary>
+        static public Symptom Parse(StringSlice slice) {
+            if (slice.IsEmpty) {
+                return default;
+            }
+
+            SymptomType type;
+            SymptomSeverity severity;
+
+            int dashIndex = slice.IndexOf('-');
+            Assert.True(dashIndex < 0 || dashIndex > 0, "Invalid symptom format '{0}' - dash must not be at start");
+            if (dashIndex > 0) {
+                StringSlice typeSlice = slice.Substring(0, dashIndex);
+                StringSlice severitySlice = slice.Substring(dashIndex + 1);
+                Assert.True(!severitySlice.IsEmpty, "Invalid symptom format '{0}' - dash must not be at end");
+                type = ParseType(typeSlice);
+                severity = ParseSeverity(severitySlice);
+            } else {
+                severity = SymptomSeverity.Minor;
+                type = ParseType(slice);
+            }
+
+            return new Symptom(type, severity);
+        }
+
+        /// <summary>
+        /// Parses a type from the given string slice.
+        /// Case-insensitive.
+        /// </summary>
+        static public SymptomType ParseType(StringSlice slice) {
+            StringHash32 fastHash = StringHash32.FastCaseInsensitive(slice);
+            if (fastHash.IsEmpty) {
+                return SymptomType.None;
+            }
+
+            int index = ArrayUtils.IndexOf(SymptomNames.Type_Hashes, fastHash);
+            Assert.True(index >= 0, "Invalid symptom type '{0}'", slice);
+            return (SymptomType) index;
+        }
+
+        /// <summary>
+        /// Parses a severity from the given string slice.
+        /// Accepted values are "major", "minor", or empty.
+        /// Case-insensitive.
+        /// </summary>
+        static public SymptomSeverity ParseSeverity(StringSlice slice) {
+            StringHash32 fastHash = StringHash32.FastCaseInsensitive(slice);
+            if (fastHash.IsEmpty || fastHash == SymptomNames.Severity_Minor) {
+                return SymptomSeverity.Minor;
+            }
+            if (fastHash == SymptomNames.Severity_Major) {
+                return SymptomSeverity.Major;
+            }
+            Assert.Fail("Invalid symptom severity '{0}'", slice);
+            return SymptomSeverity.Minor;
+        }
+
+        #endregion // Utilities
     }
 
     /// <summary>
@@ -40,6 +106,7 @@ namespace Airborne.Pollutants {
     /// Symptom type.
     /// </summary>
     public enum SymptomType : byte {
+        None,
         LossOfConsciousness,
         Headache,
         ShortnessOfBreath,
@@ -58,6 +125,7 @@ namespace Airborne.Pollutants {
     /// </summary>
     [Flags]
     public enum SymptomMask : uint {
+        None = 0,
         LossOfConsciousness = 1 << SymptomType.LossOfConsciousness,
         Headache = 1 << SymptomType.Headache,
         ShortnessOfBreath = 1 << SymptomType.ShortnessOfBreath,
@@ -68,5 +136,25 @@ namespace Airborne.Pollutants {
         Confusion = 1 << SymptomType.Confusion,
         Cough = 1 << SymptomType.Cough,
         AirwayIrritation = 1 << SymptomType.AirwayIrritation
+    }
+
+    static public class SymptomNames {
+        static public readonly StringHash32 Severity_Major = StringHash32.CaseInsensitive("Major");
+        static public readonly StringHash32 Severity_Minor = StringHash32.CaseInsensitive("Major");
+
+        // keep this in parallel with SymptomType
+        static public readonly StringHash32[] Type_Hashes = new StringHash32[] {
+            StringHash32.CaseInsensitive("None"),
+            StringHash32.CaseInsensitive("LossOfConsciousness"),
+            StringHash32.CaseInsensitive("Headache"),
+            StringHash32.CaseInsensitive("ShortnessOfBreath"),
+            StringHash32.CaseInsensitive("Dizziness"),
+            StringHash32.CaseInsensitive("EyeIrritation"),
+            StringHash32.CaseInsensitive("ChestPain"),
+            StringHash32.CaseInsensitive("Nausea"),
+            StringHash32.CaseInsensitive("Confusion"),
+            StringHash32.CaseInsensitive("Cough"),
+            StringHash32.CaseInsensitive("AirwayIrritation"),
+        };
     }
 }
