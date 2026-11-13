@@ -530,7 +530,13 @@ namespace FieldDay.Scripting {
         /// Returns the actor id for the given actor component.
         /// </summary>
         static public StringHash32 ActorId(ScriptActorComponent comp) {
-            return comp.Actor.Id;
+            if (comp) {
+                if (comp.Actor) {
+                    return comp.Actor.Id;
+                }
+                return comp.GetComponent<ScriptActor>().Id;
+            }
+            return default;
         }
 
         /// <summary>

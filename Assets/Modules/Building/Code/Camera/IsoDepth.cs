@@ -16,10 +16,6 @@ namespace Airborne.Building {
 
         [NonSerialized] public SortingGroup CachedSorting;
 
-#if UNITY_EDITOR
-        [NonSerialized] private bool m_IsEditor;
-#endif // UNITY_EDITOR
-
         private void OnEnable() {
             Game.Components?.Register(this);
         }

@@ -2,26 +2,29 @@ using System;
 using BeauUtil;
 using BeauUtil.Debugger;
 using FieldDay.Components;
+using FieldDay.Scripting;
 using ScriptableBake;
 using UnityEngine;
 
 namespace Airborne.Building {
-    public sealed class RoomInstance : BatchedComponent, IBaked {
+    public sealed class RoomInstance : ScriptActorComponent, IBaked {
         [HideInInspector] public StringHash32 Id;
         [HideInInspector] public ActionPost[] Posts;
         [HideInInspector] public int Index;
+        [HideInInspector] public BitSet64 PassageMask;
 
 #if UNITY_EDITOR
 
         int IBaked.Order { get { return -1001; } }
 
         bool IBaked.Bake(BakeFlags flags, BakeContext context) {
-            Id = name;
+            Id = StringHash32.First(ScriptUtility.ActorId(this), name);
             Posts = GetComponentsInChildren<ActionPost>(true);
             Array.Sort(Posts, (a, b) => a.Id.CompareTo(b.Id));
             for(int i = 0; i < Posts.Length; i++) {
                 Posts[i].Index = i;
             }
+            PassageMask = default;
             return true;
         }
 

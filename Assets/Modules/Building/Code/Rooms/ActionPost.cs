@@ -1,6 +1,7 @@
 using System;
 using BeauUtil;
 using FieldDay.Components;
+using FieldDay.Scripting;
 using ScriptableBake;
 using UnityEngine;
 
@@ -9,7 +10,7 @@ namespace Airborne.Building {
     /// Named location within a room.
     /// Indicates what action should be taken by residents when posted there.
     /// </summary>
-    public sealed class ActionPost : BatchedComponent, IBaked {
+    public sealed class ActionPost : ScriptActorComponent, IBaked {
         [HideInInspector] public StringHash32 Id;
         [HideInInspector] public int Index;
 
@@ -20,7 +21,7 @@ namespace Airborne.Building {
         int IBaked.Order { get { return -1001; } }
 
         bool IBaked.Bake(BakeFlags flags, BakeContext context) {
-            Id = name;
+            Id = StringHash32.First(ScriptUtility.ActorId(this), name);
             return true;
         }
 

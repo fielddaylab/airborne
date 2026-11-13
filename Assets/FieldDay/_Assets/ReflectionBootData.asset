@@ -64,9 +64,17 @@ MonoBehaviour:
     AttributeTypeName: FieldDay.Data.ConfigVar
     LookupFlags: 58
     LookupInherit: 0
-    Assemblies: []
-    Types: []
-    Members: []
+    Assemblies:
+    - AssemblyName: Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+      TypeCount: 1
+    Types:
+    - TypeName: Airborne.Pollutants.SimulationConsts
+      Self: 0
+      MemberCount: 1
+      OverloadCount: 0
+    Members:
+    - MemberName: MaxPollutantLevel
+      Type: 4
     OverloadedMethods: []
     TypeReferences: []
   DebugMenu:

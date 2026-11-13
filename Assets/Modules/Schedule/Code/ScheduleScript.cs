@@ -1,6 +1,7 @@
 using Airborne.Building;
 using Airborne.Pollutants;
 using BeauUtil;
+using BeauUtil.Debugger;
 using FieldDay;
 using FieldDay.Scripting;
 using Leaf.Runtime;
@@ -28,6 +29,7 @@ namespace Airborne.Schedule {
         [LeafMember("ScheduleResidentLocation")]
         static public void ScheduleResidentLocation(int clockHour, StringHash32 residentName, StringHash32 roomName, StringHash32 postName) {
             Find.State(out TimeScheduler time, out ActorScheduler scheduler, out BuildingManifest manifest);
+            Assert.True(time.IsInitializing, "Default schedules can only be adjusted within a level initialization");
             int residentIndex = BuildingLookup.GetResidentIndex(manifest, residentName);
             int hourIndex = ScheduleUtility.GetHourIndex(time, clockHour);
 
@@ -43,6 +45,7 @@ namespace Airborne.Schedule {
         [LeafMember("ScheduleResidentSymptom")]
         static public void ScheduleResidentSymptom(int clockHour, StringHash32 residentName, StringSlice symptomName) {
             Find.State(out TimeScheduler time, out ActorScheduler scheduler, out BuildingManifest manifest);
+            Assert.True(time.IsInitializing, "Default schedules can only be adjusted within a level initialization");
             int residentIndex = BuildingLookup.GetResidentIndex(manifest, residentName);
             int hourIndex = ScheduleUtility.GetHourIndex(time, clockHour);
 
@@ -58,6 +61,7 @@ namespace Airborne.Schedule {
         [LeafMember("ScheduleResidentScript")]
         static public void ScheduleResidentScript(int clockHour, StringHash32 residentName, StringHash32 nodeId) {
             Find.State(out TimeScheduler time, out ActorScheduler scheduler, out BuildingManifest manifest);
+            Assert.True(time.IsInitializing, "Default schedules can only be adjusted within a level initialization");
             int residentIndex = BuildingLookup.GetResidentIndex(manifest, residentName);
             int hourIndex = ScheduleUtility.GetHourIndex(time, clockHour);
 
@@ -73,6 +77,7 @@ namespace Airborne.Schedule {
         [LeafMember("ScheduleResidentCopy")]
         static public void ScheduleResidentCopy(int sourceClockHour, int destClockHour, StringHash32 residentName) {
             Find.State(out TimeScheduler time, out ActorScheduler scheduler, out BuildingManifest manifest);
+            Assert.True(time.IsInitializing, "Default schedules can only be adjusted within a level initialization");
             int residentIndex = BuildingLookup.GetResidentIndex(manifest, residentName);
             int sourceHourIndex = ScheduleUtility.GetHourIndex(time, sourceClockHour);
             int destHourIndex = ScheduleUtility.GetHourIndex(time, destClockHour);
@@ -88,6 +93,7 @@ namespace Airborne.Schedule {
         [LeafMember("ScheduleResidentCopyRange")]
         static public void ScheduleResidentCopyRange(int startClockHour, int endClockHour, StringHash32 residentName) {
             Find.State(out TimeScheduler time, out ActorScheduler scheduler, out BuildingManifest manifest);
+            Assert.True(time.IsInitializing, "Default schedules can only be adjusted within a level initialization");
             int residentIndex = BuildingLookup.GetResidentIndex(manifest, residentName);
             int startHourIndex = ScheduleUtility.GetHourIndex(time, startClockHour);
             int endHourIndex = ScheduleUtility.GetHourIndex(time, endClockHour);
@@ -102,7 +108,8 @@ namespace Airborne.Schedule {
         /// </summary>
         [LeafMember("OverrideResidentLocation")]
         static public void OverrideResidentLocation(int clockHour, StringHash32 residentName, StringHash32 roomName, StringHash32 postName) {
-            Find.State(out TimeScheduler time, out ActorScheduler scheduler, out BuildingManifest manifest);
+            Find.State(out TimeScheduler time, out ActorScheduler scheduler, out BuildingManifest manifest, out ScheduleState state);
+            Assert.True(!time.IsInitializing && state.Phase == TimePhase.Mitigation, "Schedule overrides can only happen during mitigation");
             int residentIndex = BuildingLookup.GetResidentIndex(manifest, residentName);
             int hourIndex = ScheduleUtility.GetHourIndex(time, clockHour);
 
@@ -118,7 +125,8 @@ namespace Airborne.Schedule {
         /// </summary>
         [LeafMember("OverrideResidentSymptom")]
         static public void OverrideResidentSymptom(int clockHour, StringHash32 residentName, StringSlice symptomName) {
-            Find.State(out TimeScheduler time, out ActorScheduler scheduler, out BuildingManifest manifest);
+            Find.State(out TimeScheduler time, out ActorScheduler scheduler, out BuildingManifest manifest, out ScheduleState state);
+            Assert.True(!time.IsInitializing && state.Phase == TimePhase.Mitigation, "Schedule overrides can only happen during mitigation");
             int residentIndex = BuildingLookup.GetResidentIndex(manifest, residentName);
             int hourIndex = ScheduleUtility.GetHourIndex(time, clockHour);
 
@@ -134,7 +142,8 @@ namespace Airborne.Schedule {
         /// </summary>
         [LeafMember("OverrideResidentScript")]
         static public void OverrideResidentScript(int clockHour, StringHash32 residentName, StringHash32 nodeId) {
-            Find.State(out TimeScheduler time, out ActorScheduler scheduler, out BuildingManifest manifest);
+            Find.State(out TimeScheduler time, out ActorScheduler scheduler, out BuildingManifest manifest, out ScheduleState state);
+            Assert.True(!time.IsInitializing && state.Phase == TimePhase.Mitigation, "Schedule overrides can only happen during mitigation");
             int residentIndex = BuildingLookup.GetResidentIndex(manifest, residentName);
             int hourIndex = ScheduleUtility.GetHourIndex(time, clockHour);
 
@@ -143,6 +152,23 @@ namespace Airborne.Schedule {
 
             ScheduleUtility.DefineResidentBlockScriptNode(ref block, nodeId);
             block.Flags |= ResidentTimeBlockFlags.IsOverride;
+        }
+
+        /// <summary>
+        /// Overrides a resident's schedule by copying from a different time.
+        /// </summary>
+        [LeafMember("OverrideResidentCopy")]
+        static public void OverrideResidentCopy(int sourceClockHour, int destClockHour, StringHash32 residentName) {
+            Find.State(out TimeScheduler time, out ActorScheduler scheduler, out BuildingManifest manifest, out ScheduleState state);
+            Assert.True(!time.IsInitializing && state.Phase == TimePhase.Mitigation, "Schedule overrides can only happen during mitigation");
+            int residentIndex = BuildingLookup.GetResidentIndex(manifest, residentName);
+            int sourceHourIndex = ScheduleUtility.GetHourIndex(time, sourceClockHour);
+            int destHourIndex = ScheduleUtility.GetHourIndex(time, destClockHour);
+
+            ref ResidentTimeline timeline = ref scheduler.LiveResidentTimelines[residentIndex];
+
+            ScheduleUtility.CopyResidentBlock(ref timeline, sourceHourIndex, destHourIndex);
+            timeline[destHourIndex].Flags |= ResidentTimeBlockFlags.IsOverride;
         }
 
         #endregion // Residents

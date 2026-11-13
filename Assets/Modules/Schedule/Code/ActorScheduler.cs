@@ -28,7 +28,10 @@ namespace Airborne.Schedule {
         public fixed ulong PackedTimeBlocks[BuildingConsts.MaxHours];
 
         public ref ResidentTimeBlock this[int index] {
-            get { return ref Unsafe.FastCast<ulong, ResidentTimeBlock>(ref PackedTimeBlocks[index]); }
+            get {
+                Assert.True(index >= 0 && index < BuildingConsts.MaxHours, "Index out of range");
+                return ref Unsafe.FastCast<ulong, ResidentTimeBlock>(ref PackedTimeBlocks[index]);
+            }
         }
     }
 
@@ -78,7 +81,7 @@ namespace Airborne.Schedule {
         /// <summary>
         /// Allocates data for timelines for the given object counts.
         /// </summary>
-        static public void AllocateTimelineData(ActorScheduler scheduler, int residentCount, int featureCount, int passageCount) {
+        static public void AllocateTimelineBuffers(ActorScheduler scheduler, int residentCount, int featureCount, int passageCount) {
             Assert.NotNullOrDestroyed(scheduler);
             Assert.True(scheduler.DefaultResidentTimelines == null, "Scheduler timeline arrays already created");
 

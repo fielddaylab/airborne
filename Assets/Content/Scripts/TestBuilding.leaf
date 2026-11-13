@@ -1,5 +1,10 @@
 #basePath	TestBuilding
 
+:: InitializeSchedules
+@function   LoadSchedules
+
+$call DefineHourRange(8, 12) // 8am-12pm
+
 :: LampInteract
 @trigger	OnInteract
 @who	Dresser

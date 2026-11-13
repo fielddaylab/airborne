@@ -147,6 +147,11 @@ namespace FieldDay.Scripting {
             return true;
         }
 
+        static public bool IsLoading() {
+            ScriptDatabase db = ScriptUtility.DB;
+            return db.LoadQueue.Count > 0 || db.CurrentLoadRequest.ParseHandle.IsRunning();
+        }
+
         #endregion // Loading
 
         #region Package Registration

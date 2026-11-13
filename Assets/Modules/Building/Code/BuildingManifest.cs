@@ -34,6 +34,15 @@ namespace Airborne.Building {
             BuildNameTable(context.Scene, out FeatureNames, out Features, (a) => a.Id, (a, i) => a.Index = i);
             BuildNameTable(context.Scene, out PassageNames, out Passages, (a) => a.Id, (a, i) => a.Index = i);
 
+            foreach(var passage in Passages) {
+                if (passage.Source) {
+                    passage.Source.PassageMask.Set(passage.Index);
+                }
+                if (passage.Target) {
+                    passage.Target.PassageMask.Set(passage.Index);
+                }
+            }
+
             return true;
         }
 

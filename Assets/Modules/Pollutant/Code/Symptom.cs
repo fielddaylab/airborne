@@ -107,7 +107,7 @@ namespace Airborne.Pollutants {
     /// </summary>
     public enum SymptomType : byte {
         None,
-        LossOfConsciousness,
+        Fainting,
         Headache,
         ShortnessOfBreath,
         Dizziness,
@@ -116,7 +116,8 @@ namespace Airborne.Pollutants {
         Nausea,
         Confusion,
         Cough,
-        AirwayIrritation
+        AirwayIrritation,
+        Fatigue
     }
 
     /// <summary>
@@ -126,7 +127,7 @@ namespace Airborne.Pollutants {
     [Flags]
     public enum SymptomMask : uint {
         None = 0,
-        LossOfConsciousness = 1 << SymptomType.LossOfConsciousness,
+        Fainting = 1 << SymptomType.Fainting,
         Headache = 1 << SymptomType.Headache,
         ShortnessOfBreath = 1 << SymptomType.ShortnessOfBreath,
         Dizziness = 1 << SymptomType.Dizziness,
@@ -135,17 +136,18 @@ namespace Airborne.Pollutants {
         Nausea = 1 << SymptomType.Nausea,
         Confusion = 1 << SymptomType.Confusion,
         Cough = 1 << SymptomType.Cough,
-        AirwayIrritation = 1 << SymptomType.AirwayIrritation
+        AirwayIrritation = 1 << SymptomType.AirwayIrritation,
+        Fatigue = 1 << SymptomType.Fatigue
     }
 
     static public class SymptomNames {
         static public readonly StringHash32 Severity_Major = StringHash32.CaseInsensitive("Major");
-        static public readonly StringHash32 Severity_Minor = StringHash32.CaseInsensitive("Major");
+        static public readonly StringHash32 Severity_Minor = StringHash32.CaseInsensitive("Minor");
 
         // keep this in parallel with SymptomType
         static public readonly StringHash32[] Type_Hashes = new StringHash32[] {
             StringHash32.CaseInsensitive("None"),
-            StringHash32.CaseInsensitive("LossOfConsciousness"),
+            StringHash32.CaseInsensitive("Fainting"),
             StringHash32.CaseInsensitive("Headache"),
             StringHash32.CaseInsensitive("ShortnessOfBreath"),
             StringHash32.CaseInsensitive("Dizziness"),
@@ -155,6 +157,7 @@ namespace Airborne.Pollutants {
             StringHash32.CaseInsensitive("Confusion"),
             StringHash32.CaseInsensitive("Cough"),
             StringHash32.CaseInsensitive("AirwayIrritation"),
+            StringHash32.CaseInsensitive("Fatigue"),
         };
     }
 }
