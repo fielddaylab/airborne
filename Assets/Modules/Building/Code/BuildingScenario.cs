@@ -70,6 +70,29 @@ namespace Airborne.Building {
         }
 
         #endregion // Loop
+
+        #region Pollutants
+
+        /// <summary>
+        /// Returns the index of the given pollutant.
+        /// </summary>
+        static public int GetPollutantIndex(BuildingScenario scenario, StringHash32 pollutantId) {
+            Assert.NotNullOrDestroyed(scenario);
+            int index = Array.IndexOf(scenario.Pollutants, pollutantId);
+            Assert.True(index >= 0, "Pollutant '{0}' not present in scenario", pollutantId);
+            return index;
+        }
+
+        /// <summary>
+        /// Attempts to return the index of the given pollutant.
+        /// </summary>
+        static public bool TryGetPollutantIndex(BuildingScenario scenario, StringHash32 pollutantId, out int index) {
+            Assert.NotNullOrDestroyed(scenario);
+            index = Array.IndexOf(scenario.Pollutants, pollutantId);
+            return index >= 0;
+        }
+
+        #endregion // Pollutants
     }
 
     public enum ScheduleStartupType {

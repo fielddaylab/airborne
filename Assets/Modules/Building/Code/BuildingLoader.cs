@@ -35,5 +35,26 @@ namespace Airborne.Building {
             // run initialization script
             ScenarioUtility.LoadDefaultSchedules(time, actors, sim, ScheduleStartupType.Initialization);
         }
+
+        protected override void OnSceneReady() {
+            Find.State(out BuildingScenario scenario);
+            Find.State(out TimeScheduler time, out ActorScheduler actors, out BuildingManifest manifest, out Simulator sim);
+
+            ScenarioUtility.WriteInitialDataForLoop(actors, sim);
+
+            Log.Msg("Hour 0: {0}", ScheduleUtility.GetClockHour(time, 0));
+            SimulatorUtility.DumpPollutantLevels(sim.RoomConditions.Current, manifest.RoomNames, scenario.Pollutants);
+            sim.EnabledConnections = new BitSet64(Bits.AllU64);
+            sim.SourceQueue.Add(new SimulatedSource() {
+                RoomIndex = 0,
+                PollutantIndex = 0,
+                Adjustment = 1
+            });
+            for (int i = 1; i < time.HourCount; i++) {
+                Log.Msg("Hour {0}: {1}", i, ScheduleUtility.GetClockHour(time, i));
+                SimulatorUtility.Simulate(sim);
+                SimulatorUtility.DumpPollutantLevels(sim.RoomConditions.Current, manifest.RoomNames, scenario.Pollutants);
+            }
+        }
     }
 }

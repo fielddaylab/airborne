@@ -1,4 +1,5 @@
 using BeauUtil;
+using FieldDay.Collections;
 using FieldDay.Rendering;
 using NUnit.Framework;
 using System;
@@ -40,6 +41,46 @@ namespace FieldDay.Editor.UnitTests {
             }
 
             Debug.LogFormat("Average Error: {0}", errAccum / iterCount);
+        }
+
+        [Test]
+        static public void CanBitPack64() {
+            ulong bits = 0;
+            bits = BitPack.Pack64(3, 5, 0);
+            bits |= BitPack.Pack64(16, 5, 5);
+
+            Assert.AreEqual(3, BitPack.Unpack64(bits, 5, 0));
+            Assert.AreEqual(16, BitPack.Unpack64(bits, 5, 5));
+        }
+
+        [Test]
+        static public void CanBitPack32() {
+            uint bits = 0;
+            bits |= BitPack.Pack32(3, 5, 0);
+            bits |= BitPack.Pack32(16, 5, 5);
+
+            Assert.AreEqual(3, BitPack.Unpack32(bits, 5, 0));
+            Assert.AreEqual(16, BitPack.Unpack32(bits, 5, 5));
+        }
+
+        [Test]
+        static public void CanBitPack16() {
+            ushort bits = 0;
+            bits = BitPack.Pack16(3, 5, 0);
+            bits |= BitPack.Pack16(16, 5, 5);
+
+            Assert.AreEqual(3, BitPack.Unpack16(bits, 5, 0));
+            Assert.AreEqual(16, BitPack.Unpack16(bits, 5, 5));
+        }
+
+        [Test]
+        static public void CanBitPack8() {
+            byte bits = 0;
+            bits = BitPack.Pack8(3, 3, 0);
+            bits |= BitPack.Pack8(16, 5, 3);
+
+            Assert.AreEqual(3, BitPack.Unpack8(bits, 3, 0));
+            Assert.AreEqual(16, BitPack.Unpack8(bits, 5, 3));
         }
     }
 }

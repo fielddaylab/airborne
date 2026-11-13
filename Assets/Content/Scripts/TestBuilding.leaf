@@ -3,7 +3,9 @@
 :: InitializeSchedules
 @function   LoadSchedules
 
-$call DefineHourRange(8, 12) // 8am-12pm
+$call DefineHourRange(8, 16) // 8am-4pm
+$call SetInitialPollutant("TestRoom", "Smoke", 3)
+// $call SetInitialPollutant("FlippedRoom", "Smoke", 1)
 
 :: LampInteract
 @trigger	OnInteract

@@ -2,7 +2,9 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text;
 using Airborne.Building;
+using BeauPools;
 using BeauUtil;
 using BeauUtil.Debugger;
 using FieldDay.Collections;
@@ -37,20 +39,28 @@ namespace Airborne.Pollutants {
     }
 
     public struct SimulatedConnection {
+        // In the absence of compile-time asserts, this will suffice to alert us.
+        private const byte StaticCheck_PassageIndexCanFitIn5Bits = (BuildingConsts.MaxPassages <= 32 ? 0 : -1);
+
         public byte RoomStart;
         public byte RoomEnd;
         public byte Rank;
-        public SimulatedConnectionFlags Flags;
+        public byte PackedFlagsAndPassage; // 3 bits flags, 5 bits passage index
     }
 
     public struct SimulatedSource {
         public byte RoomIndex;
         public byte PollutantIndex;
         public sbyte Adjustment;
+        public byte FeatureIndex;
     }
 
     public enum SimulatedConnectionFlags : byte {
-        DeletePollutants = 0x01
+        DeletePollutants = 0x01,
+        IsReversedPassage = 0x02,
+        
+        _Unused = 0x04
+        // ONLY 3 ENTRIES ALLOWED
     }
 
     public struct SimulatedConnectionIndexPair {
@@ -63,7 +73,7 @@ namespace Airborne.Pollutants {
         };
     }
 
-    public struct SimulationGraph {
+    public struct SimulationInputGraph {
         public SimulatedRoomNode[] Rooms;
         public SimulatedConnection[] Connections;
         public byte[] DiffusionOrder;
@@ -77,6 +87,13 @@ namespace Airborne.Pollutants {
     public struct SimulationBuffers {
         public PollutantLevels[] InputLevels;
         public PollutantLevels[] OutputLevels;
+    }
+
+    public enum SimulationEventType : byte {
+        Diffusion = 0,
+        Emission = 1,
+        Removal = 2,
+        Overflow = 3
     }
 
     static public partial class SimulatorUtility {
@@ -146,6 +163,7 @@ namespace Airborne.Pollutants {
                     flippedConnection.RoomStart = writeConnection.RoomEnd;
                     flippedConnection.RoomEnd = writeConnection.RoomStart;
                     flippedConnection.ConnectionIndex = (byte) (tempConnectionsAllocated - 1);
+                    flippedConnection.Flags |= SimulatedConnectionFlags.IsReversedPassage;
                 }
             }
 
@@ -170,7 +188,7 @@ namespace Airborne.Pollutants {
                         TempConnection temp = *readHead;
                         // remap instantiation index to connection index, for use later
                         (*readHead++).ConnectionIndex = (byte) connectionIndex;
-                        *writeHead++ = *(SimulatedConnection*) (&temp);
+                        *writeHead++ = ConvertToConnection(temp);
 
                         if (currentRoom != temp.RoomStart) {
                             Assert.True(temp.RoomStart > currentRoom, "Rooms are not sorted properly!");
@@ -213,7 +231,6 @@ namespace Airborne.Pollutants {
 
         [StructLayout(LayoutKind.Sequential)]
         private struct TempConnection {
-            // byte-identical to SimulatedConnection
             public byte RoomStart;
             public byte RoomEnd;
             public byte Rank;
@@ -260,6 +277,18 @@ namespace Airborne.Pollutants {
 
                 return a.ConnectionIndex - b.ConnectionIndex;
             }
+        }
+
+        static private SimulatedConnection ConvertToConnection(TempConnection temp) {
+            SimulatedConnection c;
+            c.Rank = temp.Rank;
+            c.PackedFlagsAndPassage = BitPack.Combine(
+                BitPack.Pack8((byte) temp.Flags, 3, 0),
+                BitPack.Pack8(temp.PassageIndex, 5, 3)
+            );
+            c.RoomStart = temp.RoomStart;
+            c.RoomEnd = temp.RoomEnd;
+            return c;
         }
 
         static private void WriteConnectionIndexToPassageMap(SimulatedConnectionIndexPair[] pairs, byte connectionIndex, in TempConnection connection) {
@@ -312,7 +341,7 @@ namespace Airborne.Pollutants {
             buffers.OutputLevels = simulator.RoomConditions.Next();
             buffers.InputLevels = simulator.RoomConditions.Back;
 
-            SimulationGraph input;
+            SimulationInputGraph input;
             input.Rooms = simulator.Rooms;
             input.Connections = simulator.Connections;
             input.DiffusionOrder = simulator.DiffusionOrder;
@@ -329,7 +358,7 @@ namespace Airborne.Pollutants {
         /// <summary>
         /// Steps the simulation forward one tick.
         /// </summary>
-        static private unsafe void StepSimulation(in SimulationGraph graph, ref SimulationBuffers buffers) {
+        static private unsafe void StepSimulation(in SimulationInputGraph graph, ref SimulationBuffers buffers) {
             Unsafe.Clear(buffers.OutputLevels);
 
             fixed(PollutantLevels* outputLevelPtr = buffers.OutputLevels)
@@ -343,7 +372,7 @@ namespace Airborne.Pollutants {
             HandleOverflows(graph, ref buffers);
         }
 
-        static private unsafe void PerformDiffusion(in SimulationGraph graph, ref SimulationBuffers buffers) {
+        static private unsafe void PerformDiffusion(in SimulationInputGraph graph, ref SimulationBuffers buffers) {
             using (Profiling.Time("Diffusion simulation", ProfileTimeUnits.Microseconds)) {
                 // walk the graph in diffusion order (by rank, then room)
                 for (int i = 0; i < graph.DiffusionOrder.Length; i++) {
@@ -360,15 +389,30 @@ namespace Airborne.Pollutants {
 
                     ref PollutantLevels srcLevels = ref buffers.InputLevels[connection.RoomStart];
                     ref PollutantLevels srcLevelsOutput = ref buffers.OutputLevels[connection.RoomStart];
-                    
-                    PollutantLevels dstLevelsReadOnly = buffers.InputLevels[connection.RoomEnd];
-                    ref PollutantLevels dstLevelsOutput = ref buffers.OutputLevels[connection.RoomEnd];
 
-                    for(int p = 0; p < graph.PollutantTypeCount; p++) {
-                        if (srcLevels[p] >= dstLevelsReadOnly[p] + SimulationConsts.DiffusionThreshold) {
-                            srcLevels[p] -= 1;
-                            srcLevelsOutput[p] -= 1;
-                            dstLevelsOutput[p] += 1;
+                    SimulatedConnectionFlags flags = (SimulatedConnectionFlags) BitPack.Unpack8(connection.PackedFlagsAndPassage, 3, 0);
+                    byte passageIndex = BitPack.Unpack8(connection.PackedFlagsAndPassage, 5, 3);
+
+                    if ((flags & SimulatedConnectionFlags.DeletePollutants) != 0) {
+                        for (int p = 0; p < graph.PollutantTypeCount; p++) {
+                            if (srcLevels[p] > 0) {
+                                srcLevels[p] -= 1;
+
+                                Assert.True(srcLevelsOutput[p] > 0, "Source output levels too low");
+                                srcLevelsOutput[p] -= 1;
+                            }
+                        }
+                    } else {
+                        ref PollutantLevels dstLevelsOutput = ref buffers.OutputLevels[connection.RoomEnd];
+
+                        for (int p = 0; p < graph.PollutantTypeCount; p++) {
+                            if (srcLevels[p] >= dstLevelsOutput[p] + SimulationConsts.DiffusionDifferenceThreshold) {
+                                srcLevels[p] -= 1;
+                                dstLevelsOutput[p] += 1;
+                                
+                                Assert.True(srcLevelsOutput[p] > 0, "Source output levels too low");
+                                srcLevelsOutput[p] -= 1;
+                            }
                         }
                     }
                 }
@@ -385,20 +429,72 @@ namespace Airborne.Pollutants {
                     SimulatedSource source = *head++;
                     ref byte level = ref roomLevels[source.RoomIndex][source.PollutantIndex];
                     level = (byte) Math.Max(level + source.Adjustment, 0);
-                    Assert.True(level <= 32);
+                    Assert.True(level <= SimulationConsts.MaxPollutantLevel);
                 }
             }
         }
 
-        static private unsafe void HandleOverflows(in SimulationGraph graph, ref SimulationBuffers buffers) {
-            
+        static private unsafe void HandleOverflows(in SimulationInputGraph graph, ref SimulationBuffers buffers) {
+            // TODO: implement
         }
 
         #endregion // Simulation
+
+        #region Debugging
+
+        static public void DumpPollutantLevels(PollutantLevels[] levels, StringHash32[] roomNames, StringHash32[] pollutantNames) {
+            int pollutantCount = pollutantNames.Length;
+            int roomCount = levels.Length;
+            Assert.True(roomNames.Length == roomCount);
+
+            using(PooledStringBuilder psb = PooledStringBuilder.CreateLarge()) {
+                psb.Builder.Append("| ");
+                AppendColumnRightPad(psb, "Room Name", 32);
+                for(int p = 0; p < pollutantCount; p++) {
+                    psb.Builder.Append(" | ");
+                    AppendColumnRightPad(psb, pollutantNames[0].ToDebugString(), 16);
+                }
+                psb.Builder.Append(" |");
+                int fullWidth = psb.Builder.Length;
+                psb.Builder.Append("\n").Append('-', fullWidth);
+                for(int i = 0; i < roomCount; i++) {
+                    psb.Builder.Append("\n| ");
+                    AppendColumnRightPad(psb, roomNames[i].ToDebugString(), 32);
+                    for(int p = 0; p < pollutantCount; p++) {
+                        psb.Builder.Append(" | ");
+                        AppendColumnLeftPad(psb, levels[i][p].ToStringLookup(), 16);
+                    }
+                    psb.Builder.Append(" |");
+                }
+                psb.Builder.Append("\n").Append('-', fullWidth);
+
+                Log.Msg(psb.Builder.Flush());
+            }
+        }
+
+        static private void AppendColumnRightPad(StringBuilder sb, string value, int width) {
+            int padding = width - Math.Min(value.Length, width);
+            sb.Append(value, 0, width - padding);
+            sb.Append(' ', padding);
+        }
+
+        static private void AppendColumnLeftPad(StringBuilder sb, string value, int width) {
+            int padding = width - Math.Min(value.Length, width);
+            sb.Append(' ', padding);
+            sb.Append(value, 0, width - padding);
+        }
+
+        #endregion // Debuggin
     }
 
     static public class SimulationConsts {
-        public const int MaxPollutantLevel = 4;
-        public const int DiffusionThreshold = 2;
+        // In the absence of compile-time asserts, this will suffice to alert us.
+        private const byte StaticCheck_DiffusionThresholdIsValid = (DiffusionDifferenceThreshold > 0 ? 0 : -1);
+        private const byte StaticCheck_OverflowThresholdIsValid = (OverflowThreshold >= 3 ? 0 : -1);
+        private const byte StaticCheck_MaximumIsValid = ((MaxPollutantLevel > OverflowThreshold && OverflowThreshold > DiffusionDifferenceThreshold) ? 0 : -1);
+
+        public const uint MaxPollutantLevel = 32;
+        public const uint OverflowThreshold = 4;
+        public const uint DiffusionDifferenceThreshold = 2;
     }
 }

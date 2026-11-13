@@ -29,10 +29,10 @@ namespace Airborne.Building {
         int IBaked.Order { get { return 1001; } }
 
         bool IBaked.Bake(BakeFlags flags, BakeContext context) {
-            BuildNameTable(context.Scene, out RoomNames, out Rooms, (a) => a.Id, (a, i) => a.Index = i);
-            BuildNameTable(context.Scene, out ResidentNames, out Residents, (a) => a.Id, (a, i) => a.Index = i);
-            BuildNameTable(context.Scene, out FeatureNames, out Features, (a) => a.Id, (a, i) => a.Index = i);
-            BuildNameTable(context.Scene, out PassageNames, out Passages, (a) => a.Id, (a, i) => a.Index = i);
+            BuildNameTable(context.Scene, BuildingConsts.MaxRooms, out RoomNames, out Rooms, (a) => a.Id, (a, i) => a.Index = i);
+            BuildNameTable(context.Scene, BuildingConsts.MaxResidents, out ResidentNames, out Residents, (a) => a.Id, (a, i) => a.Index = i);
+            BuildNameTable(context.Scene, BuildingConsts.MaxFeatures, out FeatureNames, out Features, (a) => a.Id, (a, i) => a.Index = i);
+            BuildNameTable(context.Scene, BuildingConsts.MaxPassages, out PassageNames, out Passages, (a) => a.Id, (a, i) => a.Index = i);
 
             foreach(var passage in Passages) {
                 if (passage.Source) {
@@ -46,10 +46,14 @@ namespace Airborne.Building {
             return true;
         }
 
-        static private void BuildNameTable<T>(Scene scene, out StringHash32[] names, out T[] references, Func<T, StringHash32> idFunc, Action<T, int> indexHandler) where T : Component {
+        static private void BuildNameTable<T>(Scene scene, int maxCount, out StringHash32[] names, out T[] references, Func<T, StringHash32> idFunc, Action<T, int> indexHandler) where T : Component {
             List<T> components = new List<T>();
             scene.GetAllComponents<T>(true, components);
             components.Sort((a, b) => idFunc(a).CompareTo(idFunc(b)));
+
+            if (components.Count > maxCount) {
+                Assert.Fail("[BuildingManifest] Too many elements of type '{0}' present - {1} vs max {2}", typeof(T).FullName, components.Count, maxCount);
+            }
 
             references = components.ToArray();
 
