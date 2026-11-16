@@ -28,6 +28,17 @@ namespace Airborne.Pollutants {
         }
     }
 
+    public unsafe struct PollutantAdjustments {
+        public fixed sbyte Levels[BuildingConsts.MaxPollutants];
+
+        public ref sbyte this[int index] {
+            get {
+                Assert.True(index >= 0 && index < BuildingConsts.MaxPollutants, "Index out of range");
+                return ref Levels[index];
+            }
+        }
+    }
+
     public enum PollutantCategory : byte {
         Combustion,
         Particulate,

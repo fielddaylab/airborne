@@ -18,18 +18,21 @@ namespace Airborne.Pollutants {
 
         public const byte NullIndex = 0xFF;
         
+        // static data
+
         [NonSerialized] public PollutantLevels[] InitialRoomConditions;
         [NonSerialized] public SimulatedConnectionIndexPair[] PassageToConnectionMap;
+        [NonSerialized] public PollutantAdjustments[] FeatureAdjustmentMap;
         [NonSerialized] public int PollutantTypeCount;
 
         [NonSerialized] public SimulatedRoomNode[] Rooms;
         [NonSerialized] public SimulatedConnection[] Connections;
         [NonSerialized] public byte[] DiffusionOrder;
 
+        // dynamic data
+
         [NonSerialized] public WorkList<SimulatedSource> SourceQueue;
-
         [NonSerialized] public BitSet64 EnabledConnections;
-
         [NonSerialized] public DoubleBuffered<PollutantLevels[]> RoomConditions;
     }
 
@@ -108,6 +111,7 @@ namespace Airborne.Pollutants {
 
             simulator.PollutantTypeCount = pollutantCount;
             simulator.InitialRoomConditions = new PollutantLevels[roomCount];
+            simulator.FeatureAdjustmentMap = new PollutantAdjustments[featureCount];
 
             simulator.RoomConditions.Current = new PollutantLevels[roomCount];
             simulator.RoomConditions.Back = new PollutantLevels[roomCount];
@@ -329,6 +333,26 @@ namespace Airborne.Pollutants {
 
         #endregion // Initial State
 
+        #region Opening/Closing Passages
+
+        /// <summary>
+        /// Sets the state of the given passage.
+        /// </summary>
+        static public void SetPassageState(Simulator simulator, int passageIndex, bool state) {
+            Assert.NotNullOrDestroyed(simulator);
+            Assert.True(passageIndex >= 0 && passageIndex < simulator.PassageToConnectionMap.Length, "Passage index out of range");
+
+            SimulatedConnectionIndexPair indexPair = simulator.PassageToConnectionMap[passageIndex];
+            if (indexPair.ConnectionA != Simulator.NullIndex) {
+                simulator.EnabledConnections.Set(indexPair.ConnectionA, state);
+            }
+            if (indexPair.ConnectionB != Simulator.NullIndex) {
+                simulator.EnabledConnections.Set(indexPair.ConnectionB, state);
+            }
+        }
+
+        #endregion // Opening/Closing Passages
+
         #region Simulation
 
         /// <summary>
@@ -400,6 +424,8 @@ namespace Airborne.Pollutants {
 
                                 Assert.True(srcLevelsOutput[p] > 0, "Source output levels too low");
                                 srcLevelsOutput[p] -= 1;
+
+                                Log.Msg("deleting 1 unit of pollutant {0} from room {1}", p, connection.RoomStart);
                             }
                         }
                     } else {
@@ -412,6 +438,8 @@ namespace Airborne.Pollutants {
                                 
                                 Assert.True(srcLevelsOutput[p] > 0, "Source output levels too low");
                                 srcLevelsOutput[p] -= 1;
+
+                                Log.Msg("moved 1 unit of pollutant {0} from room {1} to room {2}", p, connection.RoomStart, connection.RoomEnd);
                             }
                         }
                     }
@@ -430,12 +458,14 @@ namespace Airborne.Pollutants {
                     ref byte level = ref roomLevels[source.RoomIndex][source.PollutantIndex];
                     level = (byte) Math.Max(level + source.Adjustment, 0);
                     Assert.True(level <= SimulationConsts.MaxPollutantLevel);
+
+                    Log.Msg("added {0} units of pollutant {1} to room {2}", source.Adjustment, source.PollutantIndex, source.RoomIndex);
                 }
             }
         }
 
         static private unsafe void HandleOverflows(in SimulationInputGraph graph, ref SimulationBuffers buffers) {
-            // TODO: implement
+            
         }
 
         #endregion // Simulation

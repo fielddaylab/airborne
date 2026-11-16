@@ -48,8 +48,9 @@ namespace Airborne.Building {
             sim.SourceQueue.Add(new SimulatedSource() {
                 RoomIndex = 0,
                 PollutantIndex = 0,
-                Adjustment = 1
+                Adjustment = 2
             });
+
             for (int i = 1; i < time.HourCount; i++) {
                 Log.Msg("Hour {0}: {1}", i, ScheduleUtility.GetClockHour(time, i));
                 SimulatorUtility.Simulate(sim);

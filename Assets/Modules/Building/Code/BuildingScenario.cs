@@ -69,6 +69,26 @@ namespace Airborne.Building {
             SimulatorUtility.ApplyInitialStates(simulator);
         }
 
+        static public void ApplyActorStatesToSimulator(int hourIndex, ActorScheduler actorSchedule, Simulator simulator) {
+            int hourBitCheck = (1 << hourIndex);
+
+            // passages
+
+            for(int i = 0, len = actorSchedule.LivePassageTimelines.Length; i < len; i++) {
+                bool isEnabled = (actorSchedule.LivePassageTimelines[i].EnabledMask & hourBitCheck) != 0;
+                SimulatorUtility.SetPassageState(simulator, i, isEnabled);
+            }
+
+            // features
+
+            simulator.SourceQueue.Clear();
+
+            for (int i = 0, len = actorSchedule.LiveFeatureTimelines.Length; i < len; i++) {
+                bool isEnabled = (actorSchedule.LiveFeatureTimelines[i].EnabledMask & hourBitCheck) != 0;
+                
+            }
+        }
+
         #endregion // Loop
 
         #region Pollutants
