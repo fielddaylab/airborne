@@ -1,4 +1,5 @@
 using System;
+using Airborne.Inventory;
 using Airborne.Pollutants;
 using Airborne.Schedule;
 using BeauUtil;
@@ -33,9 +34,10 @@ namespace Airborne.Building {
     static public partial class ScenarioUtility {
         #region Initialization
 
-        static public void AllocateBuffers(BuildingScenario scenario, TimeScheduler timeScheduler, ActorScheduler actorScheduler, Simulator simulator, BuildingManifestCounts objectCounts) {
+        static public void AllocateBuffers(BuildingScenario scenario, TimeScheduler timeScheduler, ActorScheduler actorScheduler, Simulator simulator, InventoryState inv, BuildingManifestCounts objectCounts) {
             ScheduleUtility.AllocateTimelineBuffers(actorScheduler, objectCounts.ResidentCount, objectCounts.FeatureCount, objectCounts.PassageCount);
             SimulatorUtility.AllocatePollutantBuffers(simulator, objectCounts.RoomCount, objectCounts.FeatureCount, scenario.Pollutants.Length);
+            InventoryUtility.AllocateBuffers(inv, objectCounts);
         }
 
         static public void LoadDefaultSchedules(TimeScheduler timeScheduler, ActorScheduler actorScheduler, Simulator simulator, ScheduleStartupType startupType) {
@@ -64,9 +66,10 @@ namespace Airborne.Building {
 
         #region Loop
 
-        static public void WriteInitialDataForLoop(ActorScheduler actorScheduler, Simulator simulator) {
+        static public void WriteInitialDataForLoop(ActorScheduler actorScheduler, Simulator simulator, InventoryState inv) {
             ScheduleUtility.MakeTimelineLive(actorScheduler);
             SimulatorUtility.ApplyInitialStates(simulator);
+            InventoryUtility.ClearItems(inv);
         }
 
         static public void ApplyActorStatesToSimulator(int hourIndex, ActorScheduler actorSchedule, Simulator simulator) {
@@ -85,7 +88,9 @@ namespace Airborne.Building {
 
             for (int i = 0, len = actorSchedule.LiveFeatureTimelines.Length; i < len; i++) {
                 bool isEnabled = (actorSchedule.LiveFeatureTimelines[i].EnabledMask & hourBitCheck) != 0;
-                
+                if (isEnabled) {
+                    //simulator.SourceQueue.Add()
+                }
             }
         }
 

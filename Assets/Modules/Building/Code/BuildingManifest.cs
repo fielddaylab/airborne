@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using Airborne.Pollutants;
 using BeauUtil;
 using BeauUtil.Debugger;
-using FieldDay;
 using FieldDay.SharedState;
 using ScriptableBake;
 using UnityEngine;
@@ -18,11 +16,15 @@ namespace Airborne.Building {
         [HideInInspector] public StringHash32[] ResidentNames;
         [HideInInspector] public StringHash32[] FeatureNames;
         [HideInInspector] public StringHash32[] PassageNames;
+        [HideInInspector] public StringHash32[] ItemNames;
 
         [HideInInspector] public RoomInstance[] Rooms;
         [HideInInspector] public Resident[] Residents;
         [HideInInspector] public FeatureInstance[] Features;
         [HideInInspector] public PassageInstance[] Passages;
+        [HideInInspector] public ItemInstance[] Items;
+
+        // TODO: add clues to manifest
 
 #if UNITY_EDITOR
 
@@ -33,8 +35,9 @@ namespace Airborne.Building {
             BuildNameTable(context.Scene, BuildingConsts.MaxResidents, out ResidentNames, out Residents, (a) => a.Id, (a, i) => a.Index = i);
             BuildNameTable(context.Scene, BuildingConsts.MaxFeatures, out FeatureNames, out Features, (a) => a.Id, (a, i) => a.Index = i);
             BuildNameTable(context.Scene, BuildingConsts.MaxPassages, out PassageNames, out Passages, (a) => a.Id, (a, i) => a.Index = i);
+            BuildNameTable(context.Scene, BuildingConsts.MaxItems, out ItemNames, out Items, (a) => a.Id, (a, i) => a.Index = i);
 
-            foreach(var passage in Passages) {
+            foreach (var passage in Passages) {
                 if (passage.Source) {
                     passage.Source.PassageMask.Set(passage.Index);
                 }
@@ -52,7 +55,7 @@ namespace Airborne.Building {
             components.Sort((a, b) => idFunc(a).CompareTo(idFunc(b)));
 
             if (components.Count > maxCount) {
-                Assert.Fail("[BuildingManifest] Too many elements of type '{0}' present - {1} vs max {2}", typeof(T).FullName, components.Count, maxCount);
+                throw new BakeException("Too many elements of type '{0}' present - {1} vs max {2}", typeof(T).FullName, components.Count, maxCount);
             }
 
             references = components.ToArray();
@@ -77,6 +80,8 @@ namespace Airborne.Building {
         public int ResidentCount;
         public int FeatureCount;
         public int PassageCount;
+        public int ItemCount;
+        public int ClueCount;
     }
 
     static public partial class BuildingLookup {
@@ -88,6 +93,8 @@ namespace Airborne.Building {
             counts.ResidentCount = manifest.Residents.Length;
             counts.FeatureCount = manifest.Features.Length;
             counts.PassageCount = manifest.Passages.Length;
+            counts.ItemCount = manifest.Items.Length;
+            counts.ClueCount = 0; // TODO: add clues to manifest
             return counts;
         }
 

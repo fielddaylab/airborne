@@ -1,14 +1,13 @@
+// #define SIM_DIFFUSION_DEBUG
+
 using System;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using Airborne.Building;
 using BeauPools;
 using BeauUtil;
 using BeauUtil.Debugger;
 using FieldDay.Collections;
-using FieldDay.Data;
 using FieldDay.SharedState;
 
 namespace Airborne.Pollutants {
@@ -22,7 +21,7 @@ namespace Airborne.Pollutants {
 
         [NonSerialized] public PollutantLevels[] InitialRoomConditions;
         [NonSerialized] public SimulatedConnectionIndexPair[] PassageToConnectionMap;
-        [NonSerialized] public PollutantAdjustments[] FeatureAdjustmentMap;
+        [NonSerialized] public SimulatedFeature[] FeatureAdjustmentMap;
         [NonSerialized] public int PollutantTypeCount;
 
         [NonSerialized] public SimulatedRoomNode[] Rooms;
@@ -31,7 +30,7 @@ namespace Airborne.Pollutants {
 
         // dynamic data
 
-        [NonSerialized] public WorkList<SimulatedSource> SourceQueue;
+        [NonSerialized] public WorkList<QueuedAdjustment> SourceQueue;
         [NonSerialized] public BitSet64 EnabledConnections;
         [NonSerialized] public DoubleBuffered<PollutantLevels[]> RoomConditions;
     }
@@ -51,11 +50,18 @@ namespace Airborne.Pollutants {
         public byte PackedFlagsAndPassage; // 3 bits flags, 5 bits passage index
     }
 
-    public struct SimulatedSource {
+    /// <summary>
+    /// Static feature information. 5 bytes.
+    /// </summary>
+    public struct SimulatedFeature {
+        public byte RoomIndex;
+        public PollutantAdjustments Adjustments;
+    }
+
+    public struct QueuedAdjustment {
         public byte RoomIndex;
         public byte PollutantIndex;
         public sbyte Adjustment;
-        public byte FeatureIndex;
     }
 
     public enum SimulatedConnectionFlags : byte {
@@ -80,7 +86,7 @@ namespace Airborne.Pollutants {
         public SimulatedRoomNode[] Rooms;
         public SimulatedConnection[] Connections;
         public byte[] DiffusionOrder;
-        public WorkList<SimulatedSource> Sources;
+        public WorkList<QueuedAdjustment> Sources;
 
         public BitSet64 EnabledConnections;
         public int RoomCount;
@@ -90,13 +96,6 @@ namespace Airborne.Pollutants {
     public struct SimulationBuffers {
         public PollutantLevels[] InputLevels;
         public PollutantLevels[] OutputLevels;
-    }
-
-    public enum SimulationEventType : byte {
-        Diffusion = 0,
-        Emission = 1,
-        Removal = 2,
-        Overflow = 3
     }
 
     static public partial class SimulatorUtility {
@@ -111,12 +110,12 @@ namespace Airborne.Pollutants {
 
             simulator.PollutantTypeCount = pollutantCount;
             simulator.InitialRoomConditions = new PollutantLevels[roomCount];
-            simulator.FeatureAdjustmentMap = new PollutantAdjustments[featureCount];
+            simulator.FeatureAdjustmentMap = new SimulatedFeature[featureCount];
 
             simulator.RoomConditions.Current = new PollutantLevels[roomCount];
             simulator.RoomConditions.Back = new PollutantLevels[roomCount];
 
-            simulator.SourceQueue = new WorkList<SimulatedSource>(Unsafe.AlignUp32(featureCount + 16));
+            simulator.SourceQueue = new WorkList<QueuedAdjustment>(Unsafe.AlignUp32(featureCount + 16));
         }
 
         /// <summary>
@@ -135,10 +134,17 @@ namespace Airborne.Pollutants {
                 simulator.PassageToConnectionMap[i] = SimulatedConnectionIndexPair.Empty;
             }
 
+            BuildPassageConnections(simulator, manifest, counts);
+        }
+
+        /// <summary>
+        /// Constructs the graph of passage connections.
+        /// </summary>
+        static private unsafe void BuildPassageConnections(Simulator simulator, BuildingManifest manifest, BuildingManifestCounts counts) {
             TempConnection* tempConnectionBuffer = stackalloc TempConnection[counts.PassageCount * 2];
             int tempConnectionsAllocated = 0;
 
-            for(int i = 0; i < counts.PassageCount; i++) {
+            for (int i = 0; i < counts.PassageCount; i++) {
                 PassageInstance passage = manifest.Passages[i];
                 if (passage.Source == null) {
                     Log.Warn("[SimulatorUtility] Passage '{0}' has null source!", passage.name);
@@ -188,7 +194,7 @@ namespace Airborne.Pollutants {
                     int groupHead = -1;
                     int groupCount = 0;
                     int currentRoom = -1;
-                    for(int connectionIndex = 0; connectionIndex < tempConnectionsAllocated; connectionIndex++) {
+                    for (int connectionIndex = 0; connectionIndex < tempConnectionsAllocated; connectionIndex++) {
                         TempConnection temp = *readHead;
                         // remap instantiation index to connection index, for use later
                         (*readHead++).ConnectionIndex = (byte) connectionIndex;
@@ -227,7 +233,7 @@ namespace Airborne.Pollutants {
                 // order by rank
                 Unsafe.Quicksort(tempConnectionBuffer, tempConnectionsAllocated, &TempConnection.CompareRank);
 
-                for(int i = 0; i < tempConnectionsAllocated; i++) {
+                for (int i = 0; i < tempConnectionsAllocated; i++) {
                     simulator.DiffusionOrder[i] = tempConnectionBuffer[i].ConnectionIndex;
                 }
             }
@@ -425,7 +431,9 @@ namespace Airborne.Pollutants {
                                 Assert.True(srcLevelsOutput[p] > 0, "Source output levels too low");
                                 srcLevelsOutput[p] -= 1;
 
+#if SIM_DIFFUSION_DEBUG
                                 Log.Msg("deleting 1 unit of pollutant {0} from room {1}", p, connection.RoomStart);
+#endif // SIM_DIFFUSION_DEBUG
                             }
                         }
                     } else {
@@ -439,7 +447,9 @@ namespace Airborne.Pollutants {
                                 Assert.True(srcLevelsOutput[p] > 0, "Source output levels too low");
                                 srcLevelsOutput[p] -= 1;
 
+#if SIM_DIFFUSION_DEBUG
                                 Log.Msg("moved 1 unit of pollutant {0} from room {1} to room {2}", p, connection.RoomStart, connection.RoomEnd);
+#endif // SIM_DIFFUSION_DEBUG
                             }
                         }
                     }
@@ -447,19 +457,21 @@ namespace Airborne.Pollutants {
             }
         }
 
-        static private unsafe void EmitFromSources(PollutantLevels[] roomLevels, WorkList<SimulatedSource> sources) {
+        static private unsafe void EmitFromSources(PollutantLevels[] roomLevels, WorkList<QueuedAdjustment> sources) {
             int sourceCount = sources.Count;
-            fixed (SimulatedSource* sourcePtr = sources.InternalArray) {
-                SimulatedSource* head = sourcePtr;
+            fixed (QueuedAdjustment* sourcePtr = sources.InternalArray) {
+                QueuedAdjustment* head = sourcePtr;
 
                 // apply changes
                 while (sourceCount-- > 0) {
-                    SimulatedSource source = *head++;
+                    QueuedAdjustment source = *head++;
                     ref byte level = ref roomLevels[source.RoomIndex][source.PollutantIndex];
                     level = (byte) Math.Max(level + source.Adjustment, 0);
                     Assert.True(level <= SimulationConsts.MaxPollutantLevel);
 
+#if SIM_DIFFUSION_DEBUG
                     Log.Msg("added {0} units of pollutant {1} to room {2}", source.Adjustment, source.PollutantIndex, source.RoomIndex);
+#endif // SIM_DIFFUSION_DEBUG
                 }
             }
         }
@@ -523,7 +535,7 @@ namespace Airborne.Pollutants {
         private const byte StaticCheck_OverflowThresholdIsValid = (OverflowThreshold >= 3 ? 0 : -1);
         private const byte StaticCheck_MaximumIsValid = ((MaxPollutantLevel > OverflowThreshold && OverflowThreshold > DiffusionDifferenceThreshold) ? 0 : -1);
 
-        public const uint MaxPollutantLevel = 32;
+        public const uint MaxPollutantLevel = 15;
         public const uint OverflowThreshold = 4;
         public const uint DiffusionDifferenceThreshold = 2;
     }

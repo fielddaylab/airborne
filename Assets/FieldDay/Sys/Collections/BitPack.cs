@@ -90,6 +90,38 @@ namespace FieldDay.Collections {
 
         #endregion // Combine
 
+        #region Clear
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldc.i4.1; ldarg.1; shl; ldc.i4.1; sub; ldarg.2; shl; not; ldarg.0; and; ret;")]
+        static public ulong Clear64(ulong rawValue, int bitWidth, int offset) {
+            ulong mask = (1u << bitWidth) - 1;
+            return rawValue & ~(mask << offset);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldc.i4.1; ldarg.1; shl; ldc.i4.1; sub; ldarg.2; shl; not; ldarg.0; and; ret;")]
+        static public uint Clear32(uint rawValue, int bitWidth, int offset) {
+            uint mask = (1u << bitWidth) - 1;
+            return rawValue & ~(mask << offset);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldc.i4.1; ldarg.1; shl; ldc.i4.1; sub; ldarg.2; shl; not; ldarg.0; and; conv.u2; ret;")]
+        static public ushort Clear16(uint rawValue, int bitWidth, int offset) {
+            uint mask = (1u << bitWidth) - 1;
+            return (ushort) (rawValue & ~(mask << offset));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldc.i4.1; ldarg.1; shl; ldc.i4.1; sub; ldarg.2; shl; not; ldarg.0; and; conv.u1; ret;")]
+        static public byte Clear8(byte rawValue, int bitWidth, int offset) {
+            uint mask = (1u << bitWidth) - 1;
+            return (byte)(rawValue & ~(mask << offset));
+        }
+
+        #endregion // Clear
+
         #region Pack
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

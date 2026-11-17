@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Airborne.Inventory;
 using Airborne.Pollutants;
 using Airborne.Schedule;
 using BeauUtil;
@@ -12,14 +13,14 @@ namespace Airborne.Building {
     [PreloadOrder(1000)]
     public sealed class BuildingLoader : SceneController {
         protected override IEnumerator<WorkSlicer.Result?> OnScenePreload() {
-            Find.State(out BuildingScenario scenario);
+            Find.State(out BuildingScenario scenario, out InventoryState inv);
             Find.State(out TimeScheduler time, out ActorScheduler actors, out BuildingManifest manifest, out Simulator sim);
 
             BuildingManifestCounts counts = BuildingLookup.CountObjects(manifest);
 
             // initialize buffers
             Log.Msg("[BuildingLoader] Allocating buffers...");
-            ScenarioUtility.AllocateBuffers(scenario, time, actors, sim, counts);
+            ScenarioUtility.AllocateBuffers(scenario, time, actors, sim, inv, counts);
             yield return null;
 
             // build static graph
@@ -37,15 +38,15 @@ namespace Airborne.Building {
         }
 
         protected override void OnSceneReady() {
-            Find.State(out BuildingScenario scenario);
+            Find.State(out BuildingScenario scenario, out InventoryState inv);
             Find.State(out TimeScheduler time, out ActorScheduler actors, out BuildingManifest manifest, out Simulator sim);
 
-            ScenarioUtility.WriteInitialDataForLoop(actors, sim);
+            ScenarioUtility.WriteInitialDataForLoop(actors, sim, inv);
 
             Log.Msg("Hour 0: {0}", ScheduleUtility.GetClockHour(time, 0));
             SimulatorUtility.DumpPollutantLevels(sim.RoomConditions.Current, manifest.RoomNames, scenario.Pollutants);
             sim.EnabledConnections = new BitSet64(Bits.AllU64);
-            sim.SourceQueue.Add(new SimulatedSource() {
+            sim.SourceQueue.Add(new QueuedAdjustment() {
                 RoomIndex = 0,
                 PollutantIndex = 0,
                 Adjustment = 2
