@@ -48,6 +48,7 @@ namespace Airborne.Building {
                     Vector2 offset = move * moveSpeed;
 
                     player.Body.Transform.localPosition += (Vector3) offset;
+                    player.Body.ViewTransform.QueueTransformUpdate();
                     player.LookVector = move.normalized;
                 }
             }
@@ -79,6 +80,7 @@ namespace Airborne.Building {
 
                 if (shift.sqrMagnitude > 0) {
                     player.Body.transform.localPosition += (Vector3) shift;
+                    player.Body.ViewTransform.QueueTransformUpdate();
                 }
             }
         }

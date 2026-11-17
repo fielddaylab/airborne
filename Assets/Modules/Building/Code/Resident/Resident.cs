@@ -1,12 +1,17 @@
+using System;
 using BeauUtil;
+using FieldDay;
 using FieldDay.Components;
 using ScriptableBake;
 using UnityEngine;
 
 namespace Airborne.Building {
-    public sealed class Resident : BatchedComponent, IBaked {
+    public sealed class Resident : BatchedComponent, IBaked, IRegistrationCallbacks {
+        [NonSerialized] public Transform Transform;
         [HideInInspector] public StringHash32 Id;
         [HideInInspector] public int Index;
+        
+        public ViewTransformPair ViewTransform;
 
 #if UNITY_EDITOR
 
@@ -18,5 +23,15 @@ namespace Airborne.Building {
         }
 
 #endif // UNITY_EDITOR
+        public void OnRegister()
+        {
+            this.CacheComponent(ref Transform);
+            if (ViewTransform) ViewTransform.QueueTransformUpdate();
+        }
+
+        public void OnDeregister()
+        {
+            
+        }
     }
 }

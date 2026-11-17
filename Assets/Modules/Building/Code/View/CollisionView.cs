@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Airborne
 {
-    public class RemappableBounds : BatchedComponent
+    public class CollisionView : BatchedComponent
     {
         public BoxCollider2D Collider;
     }
