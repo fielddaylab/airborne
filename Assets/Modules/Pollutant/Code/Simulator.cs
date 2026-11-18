@@ -14,6 +14,7 @@ namespace Airborne.Pollutants {
     public sealed class Simulator : SharedStateComponent {
         // max number of connections (max passages * 2) must fit into 64 bits
         private const byte StaticAssert_ConnectionsIs64 = (BuildingConsts.MaxPassages * 2 <= 64 ? 0 : -1);
+        private const byte StaticAssert_MaxFeaturesIs64 = (BuildingConsts.MaxFeatures <= 64 ? 0 : -1);
 
         public const byte NullIndex = 0xFF;
         
@@ -30,8 +31,9 @@ namespace Airborne.Pollutants {
 
         // dynamic data
 
-        [NonSerialized] public WorkList<QueuedAdjustment> SourceQueue;
         [NonSerialized] public BitSet64 EnabledConnections;
+        [NonSerialized] public BitSet64 EnabledFeatures;
+        [NonSerialized] public WorkList<QueuedAdjustment> AdjustmentQueue;
         [NonSerialized] public DoubleBuffered<PollutantLevels[]> RoomConditions;
     }
 
@@ -115,7 +117,7 @@ namespace Airborne.Pollutants {
             simulator.RoomConditions.Current = new PollutantLevels[roomCount];
             simulator.RoomConditions.Back = new PollutantLevels[roomCount];
 
-            simulator.SourceQueue = new WorkList<QueuedAdjustment>(Unsafe.AlignUp32(featureCount + 16));
+            simulator.AdjustmentQueue = new WorkList<QueuedAdjustment>(Unsafe.AlignUp32(featureCount + 16));
         }
 
         /// <summary>
@@ -359,6 +361,37 @@ namespace Airborne.Pollutants {
 
         #endregion // Opening/Closing Passages
 
+        #region Features
+
+        /// <summary>
+        /// Accumulates the set of pollutant adjustments made per-feature.
+        /// </summary>
+        static public unsafe void AccumulateFeatureContributions(Simulator simulator) {
+            Assert.NotNullOrDestroyed(simulator);
+
+            int featureCount = simulator.FeatureAdjustmentMap.Length;
+            int pollutantCount = simulator.PollutantTypeCount;
+            for(int i = 0; i < featureCount; i++) {
+                if (!simulator.EnabledFeatures.IsSet(i)) {
+                    continue;
+                }
+
+                SimulatedFeature feature = simulator.FeatureAdjustmentMap[i];
+                for(int p = 0; p < BuildingConsts.MaxPollutants; p++) {
+                    sbyte adjust = feature.Adjustments[p];
+                    if (adjust != 0) {
+                        simulator.AdjustmentQueue.Add(new QueuedAdjustment() {
+                            RoomIndex = feature.RoomIndex,
+                            PollutantIndex = (byte) p,
+                            Adjustment = adjust
+                        });
+                    }
+                }
+            }
+        }
+
+        #endregion // Features
+
         #region Simulation
 
         /// <summary>
@@ -375,7 +408,7 @@ namespace Airborne.Pollutants {
             input.Rooms = simulator.Rooms;
             input.Connections = simulator.Connections;
             input.DiffusionOrder = simulator.DiffusionOrder;
-            input.Sources = simulator.SourceQueue;
+            input.Sources = simulator.AdjustmentQueue;
             input.EnabledConnections = simulator.EnabledConnections;
             input.PollutantTypeCount = simulator.PollutantTypeCount;
             input.RoomCount = simulator.Rooms.Length;
@@ -460,6 +493,9 @@ namespace Airborne.Pollutants {
         static private unsafe void EmitFromSources(PollutantLevels[] roomLevels, WorkList<QueuedAdjustment> sources) {
             int sourceCount = sources.Count;
             fixed (QueuedAdjustment* sourcePtr = sources.InternalArray) {
+                // sorting this by room and pollutant will mean we're hitting our cached room data more frequently
+                Unsafe.Quicksort(sourcePtr, sourceCount, &SortAdjustmentsByRoomAndPollutant);
+
                 QueuedAdjustment* head = sourcePtr;
 
                 // apply changes
@@ -474,6 +510,21 @@ namespace Airborne.Pollutants {
 #endif // SIM_DIFFUSION_DEBUG
                 }
             }
+        }
+
+        static private int SortAdjustmentsByRoomAndPollutant(QueuedAdjustment a, QueuedAdjustment b) {
+            int roomDiff = a.RoomIndex - b.RoomIndex;
+            int typeDiff = a.PollutantIndex - b.PollutantIndex;
+
+            if (roomDiff != 0) {
+                return roomDiff;
+            }
+
+            if (typeDiff != 0) {
+                return typeDiff;
+            }
+
+            return 0;
         }
 
         static private unsafe void HandleOverflows(in SimulationInputGraph graph, ref SimulationBuffers buffers) {

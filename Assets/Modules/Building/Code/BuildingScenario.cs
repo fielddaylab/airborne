@@ -34,9 +34,10 @@ namespace Airborne.Building {
     static public partial class ScenarioUtility {
         #region Initialization
 
-        static public void AllocateBuffers(BuildingScenario scenario, TimeScheduler timeScheduler, ActorScheduler actorScheduler, Simulator simulator, InventoryState inv, BuildingManifestCounts objectCounts) {
+        static public void AllocateBuffers(BuildingScenario scenario, TimeScheduler timeScheduler, ActorScheduler actorScheduler, Simulator simulator, SimulationCache cache, InventoryState inv, BuildingManifestCounts objectCounts) {
             ScheduleUtility.AllocateTimelineBuffers(actorScheduler, objectCounts.ResidentCount, objectCounts.FeatureCount, objectCounts.PassageCount);
             SimulatorUtility.AllocatePollutantBuffers(simulator, objectCounts.RoomCount, objectCounts.FeatureCount, scenario.Pollutants.Length);
+            SimulatorUtility.AllocateCache(cache, objectCounts.RoomCount);
             InventoryUtility.AllocateBuffers(inv, objectCounts);
         }
 
@@ -84,14 +85,15 @@ namespace Airborne.Building {
 
             // features
 
-            simulator.SourceQueue.Clear();
-
             for (int i = 0, len = actorSchedule.LiveFeatureTimelines.Length; i < len; i++) {
                 bool isEnabled = (actorSchedule.LiveFeatureTimelines[i].EnabledMask & hourBitCheck) != 0;
-                if (isEnabled) {
-                    //simulator.SourceQueue.Add()
-                }
+                simulator.EnabledFeatures.Set(i, isEnabled);
             }
+            
+            // adjustments
+
+            simulator.AdjustmentQueue.Clear();
+            SimulatorUtility.AccumulateFeatureContributions(simulator);
         }
 
         #endregion // Loop

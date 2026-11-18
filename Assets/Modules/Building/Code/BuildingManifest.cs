@@ -26,6 +26,10 @@ namespace Airborne.Building {
 
         // TODO: add clues to manifest
 
+        // Hash of all name tables.
+        // Will be used to validate save data and if content changed between saves.
+        [HideInInspector] public uint NamesHash;
+
 #if UNITY_EDITOR
 
         int IBaked.Order { get { return 1001; } }
@@ -46,6 +50,14 @@ namespace Airborne.Building {
                 }
             }
 
+            uint hash = Unsafe.Hash32(RoomNames);
+            hash = Unsafe.CombineHash32(hash, ResidentNames);
+            hash = Unsafe.CombineHash32(hash, FeatureNames);
+            hash = Unsafe.CombineHash32(hash, PassageNames);
+            hash = Unsafe.CombineHash32(hash, ItemNames);
+
+            NamesHash = hash;
+
             return true;
         }
 
@@ -64,7 +76,7 @@ namespace Airborne.Building {
                 for(int i = 0; i < references.Length; i++) {
                     indexHandler(references[i], i);
                 }
-            } 
+            }
 
             names = new StringHash32[references.Length];
             for(int i = 0; i < names.Length; i++) {

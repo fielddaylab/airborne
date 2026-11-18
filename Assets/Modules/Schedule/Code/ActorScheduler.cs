@@ -19,6 +19,9 @@ namespace Airborne.Schedule {
         [NonSerialized] public ResidentTimeline[] LiveResidentTimelines;
         [NonSerialized] public FeatureTimeline[] LiveFeatureTimelines;
         [NonSerialized] public PassageTimeline[] LivePassageTimelines;
+
+        // Disruption trackers. Reset on loop start, modified by player actions.
+        [NonSerialized] public BitSet32 DisruptedItems;
     }
 
     /// <summary>
@@ -187,6 +190,8 @@ namespace Airborne.Schedule {
             fixed (PassageTimeline* liveSchedule = scheduler.DefaultPassageTimelines) {
                 Unsafe.FastCopyArray(defaultSchedule, scheduler.DefaultPassageTimelines.Length, liveSchedule);
             }
+
+            scheduler.DisruptedItems.Clear();
         }
 
         #endregion // Timeline

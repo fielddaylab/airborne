@@ -9,9 +9,14 @@ using UnityEngine;
 namespace Airborne.Building {
     public sealed class RoomInstance : ScriptActorComponent, IBaked {
         [HideInInspector] public StringHash32 Id;
-        [HideInInspector] public ActionPost[] Posts;
         [HideInInspector] public int Index;
+        [HideInInspector] public ActionPost[] Posts;
         [HideInInspector] public BitSet64 PassageMask;
+        [HideInInspector] public BitSet64 FeatureMask;
+
+        [NonSerialized] public BitSet32 ResidentOccupants;
+        [NonSerialized] public BitSet32 ItemOccupants;
+        [NonSerialized] public BitSet32 MeterOccupants;
 
 #if UNITY_EDITOR
 

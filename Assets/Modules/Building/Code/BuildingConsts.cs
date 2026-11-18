@@ -2,9 +2,9 @@ namespace Airborne.Building {
     static public class BuildingConsts {
         public const int MaxFloors = 3;
         public const int MaxRoomsPerFloor = 4;
-        public const int MaxRooms = (MaxFloors * MaxRoomsPerFloor);
+        public const int MaxRooms = 2 + (MaxFloors * MaxRoomsPerFloor);
         
-        public const int MaxPassages = MaxRooms * 8 / 3;
+        public const int MaxPassages = MaxRooms * 7 / 3;
 
         public const int MaxPostsPerRoom = 32;
 
