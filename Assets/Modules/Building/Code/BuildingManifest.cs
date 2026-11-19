@@ -50,6 +50,12 @@ namespace Airborne.Building {
                 }
             }
 
+            foreach(var resident in Residents) {
+                if (resident.transform.parent != null) {
+                    Assert.Fail("Resident is not at root of hierarchy");
+                }
+            }
+
             uint hash = Unsafe.Hash32(RoomNames);
             hash = Unsafe.CombineHash32(hash, ResidentNames);
             hash = Unsafe.CombineHash32(hash, FeatureNames);

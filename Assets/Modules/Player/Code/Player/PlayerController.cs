@@ -1,12 +1,10 @@
 using System;
-using BeauUtil;
-using FieldDay.Components;
+using Airborne.Building;
 using FieldDay.Scripting;
-using FieldDay.SharedState;
 using FieldDay.UI;
 using UnityEngine;
 
-namespace Airborne.Building {
+namespace Airborne.Player {
     public sealed class PlayerController : ScriptActorComponent {
         public WorldInputLayer Input;
 

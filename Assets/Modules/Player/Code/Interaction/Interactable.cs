@@ -2,7 +2,7 @@ using System;
 using BeauUtil;
 using FieldDay.Scripting;
 
-namespace Airborne.Building {
+namespace Airborne.Player {
     public sealed class Interactable : ScriptActorComponent {
         public InteractableCallback CustomCallback;
         public InteractablePredicate CustomPredicate;

@@ -32,7 +32,6 @@ namespace Airborne.Pollutants {
         // dynamic data
 
         [NonSerialized] public BitSet64 EnabledConnections;
-        [NonSerialized] public BitSet64 EnabledFeatures;
         [NonSerialized] public WorkList<QueuedAdjustment> AdjustmentQueue;
         [NonSerialized] public DoubleBuffered<PollutantLevels[]> RoomConditions;
     }
@@ -343,40 +342,42 @@ namespace Airborne.Pollutants {
 
         #region Opening/Closing Passages
 
-        /// <summary>
-        /// Sets the state of the given passage.
-        /// </summary>
-        static public void SetPassageState(Simulator simulator, int passageIndex, bool state) {
-            Assert.NotNullOrDestroyed(simulator);
-            Assert.True(passageIndex >= 0 && passageIndex < simulator.PassageToConnectionMap.Length, "Passage index out of range");
-
-            SimulatedConnectionIndexPair indexPair = simulator.PassageToConnectionMap[passageIndex];
-            if (indexPair.ConnectionA != Simulator.NullIndex) {
-                simulator.EnabledConnections.Set(indexPair.ConnectionA, state);
-            }
-            if (indexPair.ConnectionB != Simulator.NullIndex) {
-                simulator.EnabledConnections.Set(indexPair.ConnectionB, state);
-            }
-        }
-
         #endregion // Opening/Closing Passages
 
         #region Features
 
+        static public unsafe void ApplyPassageStates(Simulator simulator, BitSet32 enabledPassages) {
+            Assert.NotNullOrDestroyed(simulator);
+
+            int passageCount = simulator.PassageToConnectionMap.Length;
+            for(int passageIndex = 0; passageIndex < passageCount; passageIndex++) {
+                bool isEnabled = enabledPassages.IsSet(passageIndex);
+                SimulatedConnectionIndexPair indexPair = simulator.PassageToConnectionMap[passageIndex];
+                if (indexPair.ConnectionA != Simulator.NullIndex) {
+                    simulator.EnabledConnections.Set(indexPair.ConnectionA, isEnabled);
+                }
+                if (indexPair.ConnectionB != Simulator.NullIndex) {
+                    simulator.EnabledConnections.Set(indexPair.ConnectionB, isEnabled);
+                }
+            }
+        }
+
         /// <summary>
         /// Accumulates the set of pollutant adjustments made per-feature.
         /// </summary>
-        static public unsafe void AccumulateFeatureContributions(Simulator simulator) {
+        static public unsafe void AccumulateFeatureContributions(Simulator simulator, BitSet64 enabledFeatures) {
             Assert.NotNullOrDestroyed(simulator);
+
+            simulator.AdjustmentQueue.Clear();
 
             int featureCount = simulator.FeatureAdjustmentMap.Length;
             int pollutantCount = simulator.PollutantTypeCount;
-            for(int i = 0; i < featureCount; i++) {
-                if (!simulator.EnabledFeatures.IsSet(i)) {
+            for(int featureIndex = 0; featureIndex < featureCount; featureIndex++) {
+                if (!enabledFeatures.IsSet(featureIndex)) {
                     continue;
                 }
 
-                SimulatedFeature feature = simulator.FeatureAdjustmentMap[i];
+                SimulatedFeature feature = simulator.FeatureAdjustmentMap[featureIndex];
                 for(int p = 0; p < BuildingConsts.MaxPollutants; p++) {
                     sbyte adjust = feature.Adjustments[p];
                     if (adjust != 0) {

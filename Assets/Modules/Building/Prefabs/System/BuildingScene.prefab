@@ -73,9 +73,6 @@ PrefabInstance:
       addedObject: {fileID: 4781280207562245682}
     - targetCorrespondingSourceObject: {fileID: 7429747425856537569, guid: 128dbb9f5d08d20439cb20e59bd602d8, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 6054038349219495856}
-    - targetCorrespondingSourceObject: {fileID: 7429747425856537569, guid: 128dbb9f5d08d20439cb20e59bd602d8, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 1862991075278377389}
     - targetCorrespondingSourceObject: {fileID: 7429747425856537569, guid: 128dbb9f5d08d20439cb20e59bd602d8, type: 3}
       insertIndex: -1
@@ -92,6 +89,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7429747425856537569, guid: 128dbb9f5d08d20439cb20e59bd602d8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5562920724209645454}
+    - targetCorrespondingSourceObject: {fileID: 7429747425856537569, guid: 128dbb9f5d08d20439cb20e59bd602d8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4718978362052631197}
     - targetCorrespondingSourceObject: {fileID: 7676349671097977976, guid: 128dbb9f5d08d20439cb20e59bd602d8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3560364479516232536}
@@ -101,6 +101,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7676349671097977976, guid: 128dbb9f5d08d20439cb20e59bd602d8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8389673112210849760}
+    - targetCorrespondingSourceObject: {fileID: 4104035958165599519, guid: 128dbb9f5d08d20439cb20e59bd602d8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1087200914363789271}
     - targetCorrespondingSourceObject: {fileID: 4104035958165599519, guid: 128dbb9f5d08d20439cb20e59bd602d8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2642148989387065698}
@@ -151,29 +154,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 7429747425856537569, guid: 128dbb9f5d08d20439cb20e59bd602d8, type: 3}
   m_PrefabInstance: {fileID: 8672271444179796499}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &6054038349219495856
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2252322103503389170}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 184f4e0c44c158f4991517d9f54f6670, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  RoomNames: []
-  ResidentNames: []
-  FeatureNames: []
-  PassageNames: []
-  ItemNames: []
-  Rooms: []
-  Residents: []
-  Features: []
-  Passages: []
-  Items: []
-  NamesHash: 0
 --- !u!114 &1862991075278377389
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -246,11 +226,46 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a83a25d7e178293488da485d09fc36c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &4718978362052631197
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2252322103503389170}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78a0f43502daa7a419a2a913aa327ced, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &4660783730879248140 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4104035958165599519, guid: 128dbb9f5d08d20439cb20e59bd602d8, type: 3}
   m_PrefabInstance: {fileID: 8672271444179796499}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1087200914363789271
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4660783730879248140}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 184f4e0c44c158f4991517d9f54f6670, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  RoomNames: []
+  ResidentNames: []
+  FeatureNames: []
+  PassageNames: []
+  ItemNames: []
+  Rooms: []
+  Residents: []
+  Features: []
+  Passages: []
+  Items: []
+  NamesHash: 0
 --- !u!114 &2642148989387065698
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -5,6 +5,7 @@ using Airborne.Building;
 using Airborne.Pollutants;
 using BeauUtil;
 using BeauUtil.Debugger;
+using FieldDay.Debugging;
 using FieldDay.SharedState;
 
 namespace Airborne.Schedule {
@@ -105,13 +106,20 @@ namespace Airborne.Schedule {
             Assert.NotNullOrDestroyed(scheduler);
             Assert.True(hourCount <= BuildingConsts.MaxHours);
 
+            bool hadHoles = false;
+
             for(int residentIdx = 0; residentIdx < scheduler.DefaultResidentTimelines.Length; residentIdx++) {
                 ref ResidentTimeline timeline = ref scheduler.DefaultResidentTimelines[residentIdx];
                 for(int hour = 0; hour < hourCount; hour++) {
                     if (DefineResidentBlock(ref timeline[hour])) {
                         Log.Warn("[ActorScheduler] Actor index {0} was not defined for hour index {1}", residentIdx, hour);
+                        hadHoles = true;
                     }
                 }
+            }
+
+            if (hadHoles) {
+                DebugDraw.AddLogText("Resident timelines had undefined blocks - make sure residents have a scheduled location for every hour!", ColorBank.Yellow, 5);
             }
         }
 
@@ -167,6 +175,10 @@ namespace Airborne.Schedule {
             Unsafe.Clear(scheduler.DefaultResidentTimelines);
             Unsafe.Clear(scheduler.DefaultFeatureTimelines);
             Unsafe.Clear(scheduler.DefaultPassageTimelines);
+
+            for(int i = 0; i < scheduler.DefaultPassageTimelines.Length; i++) {
+                scheduler.DefaultPassageTimelines[i].EnabledMask = (1 << BuildingConsts.MaxHours) - 1;
+            }
         }
 
         /// <summary>
@@ -187,7 +199,7 @@ namespace Airborne.Schedule {
             }
 
             fixed (PassageTimeline* defaultSchedule = scheduler.DefaultPassageTimelines)
-            fixed (PassageTimeline* liveSchedule = scheduler.DefaultPassageTimelines) {
+            fixed (PassageTimeline* liveSchedule = scheduler.LivePassageTimelines) {
                 Unsafe.FastCopyArray(defaultSchedule, scheduler.DefaultPassageTimelines.Length, liveSchedule);
             }
 
@@ -272,7 +284,7 @@ namespace Airborne.Schedule {
         /// </summary>
         static public void CopyResidentBlockRange(ref ResidentTimeline timeline, int startIndex, int endIndex) {
             Assert.True(startIndex >= 0 && startIndex < BuildingConsts.MaxHours, "Start index {0} out of range", startIndex);
-            Assert.True(endIndex >= startIndex && endIndex < BuildingConsts.MaxHours, "End index {0} out of range", startIndex);
+            Assert.True(endIndex >= startIndex && endIndex < BuildingConsts.MaxHours, "End index {0} out of range", endIndex);
 
             ref ResidentTimeBlock timeBlock = ref timeline[startIndex];
             if (DefineResidentBlock(ref timeBlock)) {

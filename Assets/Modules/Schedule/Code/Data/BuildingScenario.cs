@@ -1,4 +1,5 @@
 using System;
+using Airborne.Building;
 using Airborne.Inventory;
 using Airborne.Pollutants;
 using Airborne.Schedule;
@@ -10,10 +11,15 @@ using FieldDay.Scripting;
 using FieldDay.SharedState;
 using Leaf;
 using ScriptableBake;
+using UnityEngine;
 
-namespace Airborne.Building {
+namespace Airborne.Schedule {
+    /// <summary>
+    /// Description of scenario-specific data (i.e. pollutants, meter count)
+    /// </summary>
     public sealed class BuildingScenario : SharedStateComponent, IBaked {
         [AssetName(typeof(PollutantDefinition))] public StringHash32[] Pollutants;
+        [Range(0, BuildingConsts.MaxMeters)] public int MaxMeters = 4;
 
 #if UNITY_EDITOR
 
@@ -34,7 +40,8 @@ namespace Airborne.Building {
     static public partial class ScenarioUtility {
         #region Initialization
 
-        static public void AllocateBuffers(BuildingScenario scenario, TimeScheduler timeScheduler, ActorScheduler actorScheduler, Simulator simulator, SimulationCache cache, InventoryState inv, BuildingManifestCounts objectCounts) {
+        static public void AllocateBuffers(BuildingScenario scenario, TimeScheduler timeScheduler, ActorScheduler actorScheduler, Simulator simulator, SimulationCache cache, InventoryState inv, BuildingState buildingState, BuildingManifestCounts objectCounts) {
+            BuildingUtility.AllocateStateBuffers(buildingState, objectCounts, scenario.MaxMeters);
             ScheduleUtility.AllocateTimelineBuffers(actorScheduler, objectCounts.ResidentCount, objectCounts.FeatureCount, objectCounts.PassageCount);
             SimulatorUtility.AllocatePollutantBuffers(simulator, objectCounts.RoomCount, objectCounts.FeatureCount, scenario.Pollutants.Length);
             SimulatorUtility.AllocateCache(cache, objectCounts.RoomCount);
@@ -73,27 +80,34 @@ namespace Airborne.Building {
             InventoryUtility.ClearItems(inv);
         }
 
-        static public void ApplyActorStatesToSimulator(int hourIndex, ActorScheduler actorSchedule, Simulator simulator) {
+        static public void ApplyActorSchedulesToState(int hourIndex, ActorScheduler actorSchedule, BuildingState state) {
             int hourBitCheck = (1 << hourIndex);
 
             // passages
 
-            for(int i = 0, len = actorSchedule.LivePassageTimelines.Length; i < len; i++) {
+            for (int i = 0, len = actorSchedule.LivePassageTimelines.Length; i < len; i++) {
                 bool isEnabled = (actorSchedule.LivePassageTimelines[i].EnabledMask & hourBitCheck) != 0;
-                SimulatorUtility.SetPassageState(simulator, i, isEnabled);
+                state.EnabledPassages.Set(i, isEnabled);
             }
 
             // features
 
             for (int i = 0, len = actorSchedule.LiveFeatureTimelines.Length; i < len; i++) {
                 bool isEnabled = (actorSchedule.LiveFeatureTimelines[i].EnabledMask & hourBitCheck) != 0;
-                simulator.EnabledFeatures.Set(i, isEnabled);
+                state.EnabledFeatures.Set(i, isEnabled);
             }
-            
-            // adjustments
 
-            simulator.AdjustmentQueue.Clear();
-            SimulatorUtility.AccumulateFeatureContributions(simulator);
+            // residents
+
+            for(int i = 0, len = actorSchedule.LiveResidentTimelines.Length; i < len; i++) {
+                ResidentTimeBlock block = actorSchedule.LiveResidentTimelines[i][hourIndex];
+                ref RuntimeResidentState residentState = ref state.Residents[i];
+                residentState.RoomIndex = block.RoomIndex;
+                residentState.PostIndex = block.PostIndex;
+                residentState.Flags = block.Flags;
+                residentState.Symptom = block.Symptom;
+                residentState.ScriptNode = block.ScriptNode;
+            }
         }
 
         #endregion // Loop

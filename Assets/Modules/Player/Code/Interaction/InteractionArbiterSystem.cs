@@ -7,7 +7,7 @@ using FieldDay.SharedState;
 using FieldDay.Systems;
 using Leaf.Runtime;
 
-namespace Airborne.Building {
+namespace Airborne.Player {
     /// <summary>
     /// Requested interaction.
     /// </summary>

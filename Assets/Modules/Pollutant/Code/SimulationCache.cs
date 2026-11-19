@@ -52,6 +52,17 @@ namespace Airborne.Pollutants {
             }
         }
 
+        static public void UnpackFromCache(SimulationCache cache, Simulator simulator, int hourIndex) {
+            Assert.NotNullOrDestroyed(cache);
+            Assert.NotNullOrDestroyed(simulator);
+
+            int roomCount = simulator.RoomConditions.Current.Length;
+            for (int roomIndex = 0; roomIndex < roomCount; roomIndex++) {
+                CompressedPollutantLevels compressed = cache.RoomConditions[roomIndex][hourIndex];
+                simulator.RoomConditions.Current[roomIndex] = SimulatorUtility.DecompressLevels(compressed);
+            }
+        }
+
 #if !SIM_VALIDATE_DETERMINISM
         [System.Diagnostics.Conditional("__NEVER")]
 #endif // !SIM_VALIDATE_DETERMINISM

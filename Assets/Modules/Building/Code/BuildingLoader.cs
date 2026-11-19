@@ -13,14 +13,14 @@ namespace Airborne.Building {
     [PreloadOrder(1000), LateInitializeOrder(10000)]
     public sealed class BuildingLoader : SceneController {
         protected override IEnumerator<WorkSlicer.Result?> OnScenePreload() {
-            Find.State(out BuildingScenario scenario, out InventoryState inv, out SimulationCache cache);
+            Find.State(out BuildingScenario scenario, out InventoryState inv, out SimulationCache cache, out BuildingState buildingState);
             Find.State(out TimeScheduler time, out ActorScheduler actors, out BuildingManifest manifest, out Simulator sim);
 
             BuildingManifestCounts counts = BuildingLookup.CountObjects(manifest);
 
             // initialize buffers
             Log.Msg("[BuildingLoader] Allocating buffers...");
-            ScenarioUtility.AllocateBuffers(scenario, time, actors, sim, cache, inv, counts);
+            ScenarioUtility.AllocateBuffers(scenario, time, actors, sim, cache, inv, buildingState, counts);
             yield return null;
 
             // build static graph
@@ -43,21 +43,32 @@ namespace Airborne.Building {
         }
 
         protected override void OnSceneReady() {
-            Find.State(out BuildingScenario scenario, out InventoryState inv);
+            Find.State(out BuildingScenario scenario, out InventoryState inv, out SimulationCache cache, out BuildingState buildingState);
             Find.State(out TimeScheduler time, out ActorScheduler actors, out BuildingManifest manifest, out Simulator sim);
 
             ScenarioUtility.WriteInitialDataForLoop(actors, sim, inv);
 
             Log.Msg("Hour 0: {0}", ScheduleUtility.GetClockHour(time, 0));
             SimulatorUtility.DumpPollutantLevels(sim.RoomConditions.Current, manifest.RoomNames, scenario.Pollutants);
-            sim.EnabledConnections = new BitSet64(Bits.AllU64);
+            ScenarioUtility.ApplyActorSchedulesToState(0, actors, buildingState);
+
+            BuildingUtility.SyncResidentVisualPositions(buildingState, manifest);
+
+            SimulatorUtility.RecordToCache(cache, sim, 0);
 
             for (int i = 1; i < time.HourCount; i++) {
                 Log.Msg("Hour {0}: {1}", i, ScheduleUtility.GetClockHour(time, i));
-                ScenarioUtility.ApplyActorStatesToSimulator(i - 1, actors, sim);
+                SimulatorUtility.ApplyPassageStates(sim, buildingState.EnabledPassages);
+                SimulatorUtility.AccumulateFeatureContributions(sim, buildingState.EnabledFeatures);
                 SimulatorUtility.Simulate(sim);
                 SimulatorUtility.DumpPollutantLevels(sim.RoomConditions.Current, manifest.RoomNames, scenario.Pollutants);
+                SimulatorUtility.RecordToCache(cache, sim, i);
+
+                ScenarioUtility.ApplyActorSchedulesToState(i, actors, buildingState);
             }
+
+            ScenarioUtility.ApplyActorSchedulesToState(4, actors, buildingState);
+            BuildingUtility.SyncResidentVisualPositions(buildingState, manifest);
         }
     }
 }

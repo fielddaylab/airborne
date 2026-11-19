@@ -14,10 +14,6 @@ namespace Airborne.Building {
         [HideInInspector] public BitSet64 PassageMask;
         [HideInInspector] public BitSet64 FeatureMask;
 
-        [NonSerialized] public BitSet32 ResidentOccupants;
-        [NonSerialized] public BitSet32 ItemOccupants;
-        [NonSerialized] public BitSet32 MeterOccupants;
-
 #if UNITY_EDITOR
 
         int IBaked.Order { get { return -1001; } }

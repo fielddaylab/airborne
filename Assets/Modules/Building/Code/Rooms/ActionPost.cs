@@ -10,7 +10,7 @@ namespace Airborne.Building {
     /// Named location within a room.
     /// Indicates what action should be taken by residents when posted there.
     /// </summary>
-    public sealed class ActionPost : ScriptActorComponent, IBaked {
+    public sealed class ActionPost : BatchedComponent, IBaked {
         [HideInInspector] public StringHash32 Id;
         [HideInInspector] public int Index;
 

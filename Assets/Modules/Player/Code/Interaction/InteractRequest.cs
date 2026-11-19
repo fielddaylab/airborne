@@ -4,7 +4,7 @@ using FieldDay.Analytics;
 using FieldDay.Scripting;
 using Leaf.Runtime;
 
-namespace Airborne.Building {
+namespace Airborne.Player {
     /// <summary>
     /// Interaction data packet.
     /// Verb, involved actors, and context.

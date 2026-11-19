@@ -1,17 +1,10 @@
-using System;
-using BeauUtil;
-using BeauUtil.Debugger;
 using FieldDay;
 using FieldDay.Collections;
-using FieldDay.Components;
 using FieldDay.Physics;
-using FieldDay.SharedState;
 using FieldDay.Systems;
-using FieldDay.UI;
 using UnityEngine;
-using UnityEngine.Experimental.Rendering;
 
-namespace Airborne.Building {
+namespace Airborne.Player {
     public sealed class PlayerInteractionSystem : SystemComponent {
         private const int MaxEvaluatedInteractables = 8;
 

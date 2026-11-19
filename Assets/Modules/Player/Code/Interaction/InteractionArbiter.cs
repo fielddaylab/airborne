@@ -5,7 +5,7 @@ using FieldDay.Scripting;
 using FieldDay.SharedState;
 using Leaf.Runtime;
 
-namespace Airborne.Building {
+namespace Airborne.Player {
     /// <summary>
     /// Maintains a queue of interaction requests.
     /// </summary>

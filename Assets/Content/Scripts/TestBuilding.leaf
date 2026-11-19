@@ -4,8 +4,14 @@
 @function   LoadSchedules
 
 $call DefineHourRange(8, 16) // 8am-4pm
+
 $call SetInitialPollutant("TestRoom", "Smoke", 2)
 $call SetInitialPollutant("FlippedRoom", "Smoke", 1)
+$call SetInitialPollutant("WeirdRoom", "Smoke", 4)
+
+$call ScheduleResidentLocation(8, "Grandma", "TestRoom", "Post0")
+$call ScheduleResidentCopyRange(8, 14, "Grandma")
+$call ScheduleResidentLocation(12, "Grandma", "WeirdRoom", "Post0")
 
 :: LampInteract
 @trigger	OnInteract
