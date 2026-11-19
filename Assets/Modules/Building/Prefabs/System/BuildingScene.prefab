@@ -101,6 +101,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7676349671097977976, guid: 128dbb9f5d08d20439cb20e59bd602d8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8389673112210849760}
+    - targetCorrespondingSourceObject: {fileID: 7676349671097977976, guid: 128dbb9f5d08d20439cb20e59bd602d8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1894239415098919486}
     - targetCorrespondingSourceObject: {fileID: 4104035958165599519, guid: 128dbb9f5d08d20439cb20e59bd602d8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1087200914363789271}
@@ -147,6 +150,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3f4bd41538e95ac4cadd4318530a749a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1894239415098919486
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1359462241117834859}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edf5f8b03462408479d07060b16ff787, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &2252322103503389170 stripped
@@ -297,3 +312,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Pollutants:
   - m_HashValue: 96576166
+  MaxMeters: 4

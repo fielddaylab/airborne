@@ -18,7 +18,7 @@ namespace FieldDay.Rendering {
     /// Camera utility functions.
     /// </summary>
     static public class CameraUtility {
-        static private readonly Camera[] s_CameraWorkArray = new Camera[256];
+        static private readonly Camera[] s_CameraWorkArray = new Camera[64];
 
         /// <summary>
         /// Finds the most specific camera that renders the given layer.

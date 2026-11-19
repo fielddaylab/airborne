@@ -1,42 +1,16 @@
 using System;
+using System.Collections;
 using Airborne.Building;
 using Airborne.Inventory;
 using Airborne.Pollutants;
 using Airborne.Schedule;
 using BeauUtil;
 using BeauUtil.Debugger;
-using FieldDay.Assets;
+using FieldDay;
 using FieldDay.Debugging;
 using FieldDay.Scripting;
-using FieldDay.SharedState;
-using Leaf;
-using ScriptableBake;
-using UnityEngine;
 
-namespace Airborne.Schedule {
-    /// <summary>
-    /// Description of scenario-specific data (i.e. pollutants, meter count)
-    /// </summary>
-    public sealed class BuildingScenario : SharedStateComponent, IBaked {
-        [AssetName(typeof(PollutantDefinition))] public StringHash32[] Pollutants;
-        [Range(0, BuildingConsts.MaxMeters)] public int MaxMeters = 4;
-
-#if UNITY_EDITOR
-
-        int IBaked.Order { get { return -10000; } }
-
-        bool IBaked.Bake(BakeFlags flags, BakeContext context) {
-            if (Pollutants.Length > 4) {
-                Array.Resize(ref Pollutants, 4);
-                return true;
-            }
-
-            return false;
-        }
-
-#endif // UNITY_EDITOR
-    }
-
+namespace Airborne.Scenario {
     static public partial class ScenarioUtility {
         #region Initialization
 
@@ -99,7 +73,7 @@ namespace Airborne.Schedule {
 
             // residents
 
-            for(int i = 0, len = actorSchedule.LiveResidentTimelines.Length; i < len; i++) {
+            for (int i = 0, len = actorSchedule.LiveResidentTimelines.Length; i < len; i++) {
                 ResidentTimeBlock block = actorSchedule.LiveResidentTimelines[i][hourIndex];
                 ref RuntimeResidentState residentState = ref state.Residents[i];
                 residentState.RoomIndex = block.RoomIndex;
@@ -134,6 +108,35 @@ namespace Airborne.Schedule {
         }
 
         #endregion // Pollutants
+
+        #region Cache Generation
+
+        static public IEnumerator GenerateSimulationCacheTask() {
+            using (Profiling.Time("generating simulation cache")) {
+                Find.State(out SimulationCache cache, out Simulator sim, out BuildingState building, out BuildingManifest manifest);
+                Find.State(out ActorScheduler scheduler, out TimeScheduler time, out BuildingScenario scenario, out InventoryState inv);
+
+                Log.Msg("[ScenarioUtility] Generating simulation cache...");
+                ScenarioUtility.WriteInitialDataForLoop(scheduler, sim, inv);
+                ScenarioUtility.ApplyActorSchedulesToState(0, scheduler, building);
+                SimulatorUtility.RecordToCache(cache, sim, 0);
+                yield return null;
+
+                for (int i = 1; i < time.HourCount; i++) {
+                    Log.Msg("[ScenarioUtility] Simulating for hour {0}...", i);
+                    SimulatorUtility.ApplyPassageStates(sim, building.EnabledPassages);
+                    SimulatorUtility.AccumulateFeatureContributions(sim, building.EnabledFeatures);
+                    SimulatorUtility.Simulate(sim);
+                    SimulatorUtility.RecordToCache(cache, sim, i);
+                    ScenarioUtility.ApplyActorSchedulesToState(i, scheduler, building);
+                    yield return null;
+                }
+
+                Log.Msg("[ScenarioUtility] Simulation cache generated!");
+            }
+        }
+
+        #endregion // Cache Generation
     }
 
     public enum ScheduleStartupType {

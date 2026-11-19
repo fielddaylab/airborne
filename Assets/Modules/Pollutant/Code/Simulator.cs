@@ -437,7 +437,7 @@ namespace Airborne.Pollutants {
         }
 
         static private unsafe void PerformDiffusion(in SimulationInputGraph graph, ref SimulationBuffers buffers) {
-            using (Profiling.Time("Diffusion simulation", ProfileTimeUnits.Microseconds)) {
+            using (Profiling.Time("Diffusion simulation", ProfileTimeUnits.Cycles)) {
                 // walk the graph in diffusion order (by rank, then room)
                 for (int i = 0; i < graph.DiffusionOrder.Length; i++) {
                     int connectionIndex = graph.DiffusionOrder[i];

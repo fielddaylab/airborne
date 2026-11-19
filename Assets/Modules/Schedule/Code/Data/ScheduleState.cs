@@ -16,7 +16,4 @@ namespace Airborne.Schedule {
         Mitigation,
         Ended
     }
-
-    static public partial class ScheduleUtility {
-    }
 }
