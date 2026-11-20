@@ -11,6 +11,7 @@ namespace Airborne.Building {
         [HideInInspector] public StringHash32 Id;
         [HideInInspector] public int Index;
         [HideInInspector] public ActionPost[] Posts;
+        [HideInInspector] public FeatureInstance[] Features;
         [HideInInspector] public BitSet64 PassageMask;
         [HideInInspector] public BitSet64 FeatureMask;
 
@@ -24,6 +25,11 @@ namespace Airborne.Building {
             Array.Sort(Posts, (a, b) => a.Id.CompareTo(b.Id));
             for(int i = 0; i < Posts.Length; i++) {
                 Posts[i].Index = i;
+            }
+            Features = GetComponentsInChildren<FeatureInstance>(true);
+            Array.Sort(Features, (a, b) => a.Id.CompareTo(b.Id));
+            for(int i = 0; i < Features.Length; i++) {
+                Features[i].Index = i;
             }
             PassageMask = default;
             return true;
