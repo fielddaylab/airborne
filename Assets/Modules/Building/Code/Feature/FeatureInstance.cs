@@ -8,8 +8,6 @@ namespace Airborne.Building {
         [HideInInspector] public StringHash32 Id;
         [HideInInspector] public int Index;
 
-        public bool Enabled = true;
-
 #if UNITY_EDITOR
 
         int IBaked.Order { get { return -1001; } }
@@ -20,15 +18,5 @@ namespace Airborne.Building {
         }
 
 #endif // UNITY_EDITOR
-
-        public void OnRoomEnabled() {   // these could be pulled into an interface instead?
-            if (Enabled) {
-                gameObject.SetActive(true);
-            }
-        }
-
-        public void OnRoomDisabled() {
-            gameObject.SetActive(false);
-        }
     }
 }

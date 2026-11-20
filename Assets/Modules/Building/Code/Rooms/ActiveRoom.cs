@@ -9,14 +9,14 @@ namespace Airborne.Building
     
     static public partial class BuildingUtility {
         static public void EnableRoom(RoomInstance room) {
-            for (int i = 0; i < room.Features.Length; i++) {
-                room.Features[i].OnRoomEnabled();
+            for (int i = 0; i < room.RenderElements.Length; i++) {
+                room.RenderElements[i].OnRoomEnabled();
             }
         }
 
         static public void DisableRoom(RoomInstance room) {
-            for (int i = 0; i < room.Features.Length; i++) {
-                room.Features[i].OnRoomDisabled();
+            for (int i = 0; i < room.RenderElements.Length; i++) {
+                room.RenderElements[i].OnRoomDisabled();
             }
         }
 

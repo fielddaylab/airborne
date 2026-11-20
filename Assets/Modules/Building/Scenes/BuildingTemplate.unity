@@ -564,7 +564,7 @@ MonoBehaviour:
     m_HashValue: 0
   Index: 0
   Posts: []
-  Features: []
+  RenderElements: []
   PassageMask:
     m_Bits: 0
   FeatureMask:
@@ -1069,6 +1069,7 @@ GameObject:
   - component: {fileID: 551403129}
   - component: {fileID: 551403130}
   - component: {fileID: 551403131}
+  - component: {fileID: 551403132}
   m_Layer: 0
   m_Name: CeilingFan
   m_TagString: Untagged
@@ -1134,7 +1135,22 @@ MonoBehaviour:
   Id:
     m_HashValue: 0
   Index: 0
-  Enabled: 1
+--- !u!114 &551403132
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 551403127}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 347959014f9449bc90af0d79a0185894, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Id:
+    m_HashValue: 0
+  Index: 0
+  Enabled: 0
 --- !u!1 &580672363
 GameObject:
   m_ObjectHideFlags: 0
@@ -3006,7 +3022,7 @@ MonoBehaviour:
     m_HashValue: 0
   Index: 0
   Posts: []
-  Features: []
+  RenderElements: []
   PassageMask:
     m_Bits: 0
   FeatureMask:
@@ -4115,7 +4131,7 @@ MonoBehaviour:
     m_HashValue: 0
   Index: 0
   Posts: []
-  Features: []
+  RenderElements: []
   PassageMask:
     m_Bits: 0
   FeatureMask:
